@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+@theme {
+  --color-teal-950: #040d0a;
+  --color-teal-900: #080f0d;
+  --color-teal-850: #0d1a15;
+  --color-teal-800: #112219;
+  --color-teal-700: #1a3028;
+  --color-teal-600: #0F6E56;
+  --color-teal-500: #1D9E75;
+  --color-teal-400: #5DCAA5;
+  --color-teal-200: #a8e6d0;
+  --color-teal-100: #d4f3e8;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: #080f0d;
+  color: #e8f5f0;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: #1D9E75;
+  color: #080f0d;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #080f0d;
+}
+::-webkit-scrollbar-thumb {
+  background: #1D9E75;
+  border-radius: 3px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #3a5e50;
+}
+
+/* Scroll offset for fixed navbar */
+#services, #why, #about, #contact {
+  scroll-margin-top: 80px;
+}
+
+/* Services grid: 3 top row, 2 centered bottom row */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 20px;
+}
+.services-grid > *:nth-child(-n+3) { grid-column: span 2; }
+.services-grid > *:nth-child(4)    { grid-column: 2 / 4; }
+.services-grid > *:nth-child(5)    { grid-column: 4 / 6; }
+
+@media (max-width: 900px) {
+  .services-grid { grid-template-columns: repeat(2, 1fr); }
+  .services-grid > *:nth-child(-n+3) { grid-column: span 1; }
+  .services-grid > *:nth-child(4)    { grid-column: span 1; }
+  .services-grid > *:nth-child(5)    { grid-column: span 1; }
+}
+
+@media (max-width: 560px) {
+  .services-grid { grid-template-columns: 1fr; }
+}
+
+/* Responsive grid helpers */
+@media (max-width: 768px) {
+  .footer-grid { grid-template-columns: 1fr 1fr !important; }
+}
+
+@media (max-width: 640px) {
+  .grid-2col { grid-template-columns: 1fr !important; }
+  .why-grid { grid-template-columns: 1fr !important; }
+  .footer-grid { grid-template-columns: 1fr !important; }
+  /* On mobile, show bottom border on all but last pillar, no right borders */
+  .pillar-cell { border-right: none !important; border-bottom: 1px solid rgba(26,48,40,0.6) !important; }
+  .pillar-3 { border-bottom: none !important; }
+}
