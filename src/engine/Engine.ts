@@ -30,7 +30,9 @@ export interface System {
   dispose?(): void
 }
 
-const tmpObj = new THREE.Object3D()
+// MUST be a camera: Object3D.lookAt() points +Z at the target for non-cameras
+// and -Z for cameras/lights, so a plain Object3D yields a 180-flipped quaternion.
+const tmpObj = new THREE.PerspectiveCamera()
 const tmpQuatA = new THREE.Quaternion()
 const tmpQuatB = new THREE.Quaternion()
 const tmpVec = new THREE.Vector3()

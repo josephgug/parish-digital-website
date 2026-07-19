@@ -28,7 +28,7 @@ export default function Navbar() {
         id="site-header"
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.9, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.6, delay: 2.2, ease: [0.22, 1, 0.36, 1] }}
         style={{
           position: 'fixed',
           top: 0, left: 0, right: 0,

@@ -1,14 +1,22 @@
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 
 const EASE = [0.22, 1, 0.36, 1] as [number, number, number, number]
 
-const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 32 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.7, delay, ease: EASE },
-})
+/**
+ * The hero copy resolves in AFTER the WebGL logomark assembles and disperses
+ * (~2.4s). Sequencing it this way is the load choreography — otherwise the
+ * headline sits on top of the signature formation and neither reads.
+ */
+const INTRO = 2.4
 
 export default function Hero() {
+  const reduced = useReducedMotion()
+  const fadeUp = (delay = 0) => ({
+    initial: reduced ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.7, delay: reduced ? 0 : INTRO + delay, ease: EASE },
+  })
+
   return (
     <section
       id="hero"
@@ -153,8 +161,16 @@ export default function Hero() {
 
       {/* Scroll indicator */}
       <motion.div
-        animate={{ y: [0, 8, 0] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        initial={reduced ? { opacity: 1 } : { opacity: 0 }}
+        animate={reduced ? { opacity: 1 } : { opacity: 1, y: [0, 8, 0] }}
+        transition={
+          reduced
+            ? { duration: 0 }
+            : {
+                opacity: { duration: 0.6, delay: INTRO + 0.6 },
+                y: { duration: 2, repeat: Infinity, ease: 'easeInOut', delay: INTRO + 0.6 },
+              }
+        }
         style={{
           position: 'absolute', bottom: 36, left: '50%',
           transform: 'translateX(-50%)',

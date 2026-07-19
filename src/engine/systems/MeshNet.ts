@@ -10,10 +10,10 @@ import { LOGO_NODES, mulberry32, sampleLogo } from '../logomark'
 import { PD, vec3 } from '../palette'
 import { LOGO_Z, WAYPOINTS } from '../waypoints'
 
-const NODE_COUNT = 230
-const CORRIDOR_NEAR = 9
-const CORRIDOR_FAR = -42
-const LOGO_SCALE = 3.6
+const NODE_COUNT = 380
+const CORRIDOR_NEAR = 15
+const CORRIDOR_FAR = -46
+const LOGO_SCALE = 2.0
 
 const nodeVert = /* glsl */ `
   attribute vec3 aPos;
@@ -42,7 +42,7 @@ const nodeVert = /* glsl */ `
     p.x += sin(uTime * 0.31 + aSeed.x * 6.2831) * 0.11 * dr;
     p.y += cos(uTime * 0.27 + aSeed.y * 6.2831) * 0.11 * dr;
 
-    vAct = smoothstep(11.0, 0.5, abs(p.z - uCamZ));
+    vAct = smoothstep(20.0, 0.5, abs(p.z - uCamZ));
     vHub = aSeed.y;
 
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
@@ -65,12 +65,12 @@ const nodeFrag = /* glsl */ `
 
   void main() {
     float d = length(vUv - 0.5) * 2.0;
-    float core = pow(max(0.0, 1.0 - d), 8.0);
-    float halo = pow(max(0.0, 1.0 - d), 2.2) * 0.35;
-    float a = (core + halo) * uOpacity * (0.30 + vAct * 0.70) * (1.0 - uBurst * 0.85);
-    if (a < 0.002) discard;
+    float core = pow(max(0.0, 1.0 - d), 3.2);
+    float halo = pow(max(0.0, 1.0 - d), 1.4) * 0.45;
+    float a = min(1.0, core + halo) * uOpacity * (0.34 + vAct * 0.66) * (1.0 - uBurst * 0.85);
+    if (a < 0.003) discard;
     vec3 col = mix(uTeal, uMark, core * 0.85 + vHub * 0.15);
-    gl_FragColor = vec4(col * (0.6 + vAct * 1.5), a);
+    gl_FragColor = vec4(col * (0.85 + vAct * 1.6), a);
   }
 `
 
@@ -99,7 +99,7 @@ const edgeVert = /* glsl */ `
 
     vT = aT;
     vSeed = aSeed;
-    vAct = smoothstep(13.0, 0.5, abs(p.z - uCamZ));
+    vAct = smoothstep(22.0, 0.5, abs(p.z - uCamZ));
     gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
   }
 `
@@ -108,6 +108,7 @@ const edgeFrag = /* glsl */ `
   precision highp float;
   uniform vec3 uDeep;
   uniform vec3 uMark;
+  uniform vec3 uTeal;
   uniform float uTime;
   uniform float uOpacity;
   uniform float uPulses;
@@ -117,13 +118,13 @@ const edgeFrag = /* glsl */ `
   varying float vAct;
 
   void main() {
-    float base = 0.11;
+    float base = 0.22;
     // packet travelling the wire — the "loop running" read
     float m = fract(vT - uTime * (0.16 + vSeed * 0.12) + vSeed);
     float packet = exp(-pow((m - 0.5) / 0.055, 2.0)) * uPulses;
-    float a = (base + packet * 0.9) * uOpacity * (0.18 + vAct * 0.82) * (1.0 - uBurst * 0.9);
-    if (a < 0.002) discard;
-    gl_FragColor = vec4(mix(uDeep, uMark, packet), a);
+    float a = (base + packet * 0.85) * uOpacity * (0.22 + vAct * 0.78) * (1.0 - uBurst * 0.9);
+    if (a < 0.003) discard;
+    gl_FragColor = vec4(mix(uTeal, uMark, packet) * (1.0 + packet * 2.2), a);
   }
 `
 
@@ -158,7 +159,7 @@ export class MeshNet implements System {
       const t = i / (NODE_COUNT - 1)
       const z = CORRIDOR_NEAR + (CORRIDOR_FAR - CORRIDOR_NEAR) * t + (rand() - 0.5) * 2.4
       const ang = rand() * Math.PI * 2
-      const rad = 1.5 + Math.pow(rand(), 0.62) * 9.5
+      const rad = 1.3 + Math.pow(rand(), 0.62) * 8.5
       pos[i * 3] = Math.cos(ang) * rad
       pos[i * 3 + 1] = Math.sin(ang) * rad * 0.74
       pos[i * 3 + 2] = z
@@ -175,7 +176,7 @@ export class MeshNet implements System {
 
       seed[i * 2] = rand()
       seed[i * 2 + 1] = rand()
-      size[i] = 0.055 + Math.pow(rand(), 2.4) * 0.16
+      size[i] = 0.11 + Math.pow(rand(), 2.4) * 0.42
     }
 
     // --- nodes: instanced billboards ---

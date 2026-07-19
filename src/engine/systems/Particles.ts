@@ -13,7 +13,7 @@ import { PD, vec3 } from '../palette'
 import { LOGO_Z, WAYPOINTS } from '../waypoints'
 
 const INTRO_SCALE = 1.3
-const CTA_SCALE = 3.6
+const CTA_SCALE = 2.0
 
 const vert = /* glsl */ `
   attribute vec3 aHome;
@@ -60,13 +60,14 @@ const vert = /* glsl */ `
 
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     float dist = max(0.05, -mv.z);
-    gl_PointSize = aScale * uSize * uDpr / dist;
+    // perspective point size: worldSize * (h / 2tan(fov/2)) / dist
+    gl_PointSize = max(1.0, aScale * uSize * uDpr / dist);
     gl_Position = projectionMatrix * mv;
 
-    float near = smoothstep(0.4, 3.0, dist);
-    float far = 1.0 - smoothstep(30.0, 58.0, dist);
-    vHot = smoothstep(14.0, 1.0, abs(p.z - uCamZ));
-    vAlpha = near * far * (0.20 + vHot * 0.80) * (1.0 - uBurst * 0.7);
+    float near = smoothstep(0.25, 1.8, dist);
+    float far = 1.0 - smoothstep(34.0, 68.0, dist);
+    vHot = smoothstep(18.0, 1.0, abs(p.z - uCamZ));
+    vAlpha = near * far * (0.28 + vHot * 0.72) * (1.0 - uBurst * 0.7);
   }
 `
 
@@ -80,9 +81,10 @@ const frag = /* glsl */ `
 
   void main() {
     float d = length(gl_PointCoord - 0.5) * 2.0;
-    float a = pow(max(0.0, 1.0 - d), 2.6) * vAlpha * uOpacity;
-    if (a < 0.003) discard;
-    gl_FragColor = vec4(mix(uTeal, uMark, vHot) * (0.5 + vHot), a);
+    float core = pow(max(0.0, 1.0 - d), 2.0);
+    float a = core * vAlpha * uOpacity;
+    if (a < 0.004) discard;
+    gl_FragColor = vec4(mix(uTeal, uMark, vHot * 0.9) * (0.75 + vHot * 1.15), a);
   }
 `
 
@@ -117,7 +119,7 @@ export class Particles implements System {
 
     for (let i = 0; i < count; i++) {
       const t = i / count
-      const z = 12 - 58 * t + (rand() - 0.5) * 3
+      const z = 17 - 66 * t + (rand() - 0.5) * 3
       const ang = rand() * Math.PI * 2
       const rad = 0.5 + Math.pow(rand(), 0.55) * 13
       home[i * 3] = Math.cos(ang) * rad
@@ -142,7 +144,8 @@ export class Particles implements System {
       burst[i * 3 + 1] = Math.sin(ba) * 0.55 + 0.8
       burst[i * 3 + 2] = 0.4 + rand() * 0.9
 
-      scale[i] = 6 + Math.pow(rand(), 3) * 34
+      // world-space diameter; the vertex shader converts to pixels
+      scale[i] = 0.009 + Math.pow(rand(), 3) * 0.062
     }
 
     const g = new THREE.BufferGeometry()
@@ -226,7 +229,8 @@ export class Particles implements System {
     this.uniforms.uCamZ.value = ctx.camera.position.z
     this.uniforms.uScrollDelta.value = ctx.uScrollDelta
     this.uniforms.uRepel.value = ctx.reduced ? 0 : this.repel
-    this.uniforms.uSize.value = ctx.size.h / 900
+    this.uniforms.uSize.value =
+      ctx.size.h / (2 * Math.tan((ctx.camera.fov * Math.PI) / 360))
   }
 
   resize(ctx: FrameCtx) {

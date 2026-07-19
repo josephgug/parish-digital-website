@@ -59,7 +59,7 @@ export const WAYPOINTS: Waypoint[] = [
     id: 'contact',
     at: 0.82,
     position: [0, 0, -27.5],
-    lookAt: [0, 0, -32],
+    lookAt: [0, 0, -41.5],
     fov: 28,
     moveXY: [0.15, 0.15],
     wobble: 0.02,
@@ -68,8 +68,8 @@ export const WAYPOINTS: Waypoint[] = [
   {
     id: 'footer',
     at: 1,
-    position: [0, -1.2, -14],
-    lookAt: [0, 0, -32],
+    position: [0, -1, -22],
+    lookAt: [0, 0, -41.5],
     fov: 30,
     moveXY: [0, 0],
     wobble: 0,
@@ -77,5 +77,8 @@ export const WAYPOINTS: Waypoint[] = [
   },
 ]
 
-/** World Z of the signature logomark (sits just past the contact waypoint). */
-export const LOGO_Z = -32
+/**
+ * World Z where the mesh contracts into the logomark — 14 units ahead of the
+ * contact waypoint, which frames the mark at ~60% of the viewport height.
+ */
+export const LOGO_Z = -41.5
