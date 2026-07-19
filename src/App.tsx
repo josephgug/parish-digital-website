@@ -12,8 +12,14 @@ import Footer from './components/Footer'
  * its work — without runway the fly-through has nowhere to travel and the
  * sections read as a stack of cards over a busy background.
  */
-function Band({ vh = 85 }: { vh?: number }) {
-  return <div aria-hidden="true" style={{ height: `${vh}vh`, pointerEvents: 'none' }} />
+function Band({ vh = 85, label }: { vh?: number; label?: string }) {
+  return (
+    <div style={{ height: `${vh}vh`, pointerEvents: 'none' }}>
+      {/* The band's display type is rendered as MSDF in the canvas; this keeps
+          the same words in the document for search engines and screen readers. */}
+      {label && <p className="sr-only">{label}</p>}
+    </div>
+  )
 }
 
 /**
@@ -30,13 +36,13 @@ function App() {
       <div id="scroll-root">
         <div id="scroll-content">
           <Hero />
-          <Band vh={130} />
+          <Band vh={130} label="We build the machine that runs your business." />
           <Services />
-          <Band vh={120} />
+          <Band vh={120} label="Agents" />
           <WhyParish />
-          <Band vh={120} />
+          <Band vh={120} label="Automations" />
           <About />
-          <Band vh={120} />
+          <Band vh={120} label="Loops" />
           <Contact />
           <Band vh={100} />
           <Footer />

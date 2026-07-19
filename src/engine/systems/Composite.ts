@@ -71,11 +71,14 @@ const compFrag = /* glsl */ `
     // 7) special-state zoom, applied to the sampling uv
     vec2 uv = (vUv - 0.5) / mix(1.0, 1.06, pow(uContact, 3.0)) + 0.5;
 
-    // 1) fluid displacement
-    vec2 fn = (texture2D(tFluid, vUv).xy) * uFluid;
+    // 1) fluid displacement — tFluid holds velocity in sim-pixel units, so it
+    //    needs both the scale and a hard clamp or a fast swipe throws the uv
+    //    clean off the texture.
+    vec2 raw = texture2D(tFluid, vUv).xy;
+    vec2 fn = raw / (1.0 + abs(raw)) * uFluid;   // soft-normalised, always bounded
     // 2) frost shimmer
-    float frost = length(fn) * (1.0 + sin(uTime - length(vUv - 0.5) * 30.0 + uScroll * 5.0) * 0.9);
-    uv += fn * frost * 0.5;
+    float frost = 1.0 + sin(uTime - length(vUv - 0.5) * 30.0 + uScroll * 5.0) * 0.9;
+    uv += fn * frost;
 
     // 3) chromatic aberration — uniform directional split, channels 120 apart
     vec3 color = getRGB(tScene, uv, radians(120.0), 0.0001 * uScrollDelta - 0.0005 * uContact).rgb;
@@ -216,7 +219,7 @@ export class Composite implements System {
     u.tScene.value = this.sceneRT.texture
     u.tBloom.value = this.bloomOn ? this.blurB.texture : null
     u.tFluid.value = this.fluidTexture
-    u.uFluid.value = this.fluidTexture && !ctx.reduced ? 0.06 : 0
+    u.uFluid.value = this.fluidTexture && !ctx.reduced ? 0.012 : 0
     u.uScrollDelta.value = ctx.uScrollDelta
     u.uTime.value = ctx.time
     u.uScroll.value = ctx.scroll.y * 0.001
