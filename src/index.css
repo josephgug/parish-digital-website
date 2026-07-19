@@ -20,8 +20,11 @@
   box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {
@@ -31,6 +34,64 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---- the one WebGL2 canvas, behind everything ---- */
+#world {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+  /* reduced-motion / pre-boot poster so the first paint is never a black box */
+  background:
+    radial-gradient(60% 50% at 50% 32%, rgba(15, 110, 86, 0.22) 0%, transparent 70%),
+    radial-gradient(40% 40% at 85% 88%, rgba(29, 158, 117, 0.1) 0%, transparent 70%),
+    #080f0d;
+}
+
+/* ---- the DOM content layer, transformed by the same scroll value ---- */
+#scroll-root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 1;
+  touch-action: none;
+}
+
+#scroll-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Nav flash when the mesh bursts out of the logomark at the CTA */
+.nav-burst #site-header {
+  box-shadow: 0 0 60px rgba(93, 202, 165, 0.45);
+  border-bottom-color: rgba(93, 202, 165, 0.55) !important;
+}
+
+/* ---- no-WebGL fallback: give the browser its scroll back ---- */
+.no-webgl #world {
+  display: none;
+}
+.no-webgl,
+.no-webgl body {
+  overflow: auto;
+  height: auto;
+}
+.no-webgl #scroll-root {
+  position: static;
+  overflow: visible;
+  touch-action: auto;
+}
+.no-webgl #scroll-content {
+  position: static;
+  transform: none !important;
 }
 
 ::selection {
@@ -59,9 +120,10 @@ textarea::placeholder {
   color: #3a5e50;
 }
 
-/* Scroll offset for fixed navbar */
-#services, #why, #about, #contact {
-  scroll-margin-top: 80px;
+@media (prefers-reduced-motion: reduce) {
+  #scroll-content {
+    will-change: auto;
+  }
 }
 
 /* Services grid: 3 top row, 2 centered bottom row */

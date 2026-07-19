@@ -11,6 +11,7 @@ const fadeUp = (delay = 0) => ({
 export default function Hero() {
   return (
     <section
+      id="hero"
       style={{
         minHeight: '100vh',
         display: 'flex',
@@ -21,37 +22,7 @@ export default function Hero() {
         paddingTop: 72,
       }}
     >
-      {/* Background gradient orbs */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none',
-        overflow: 'hidden',
-      }}>
-        <div style={{
-          position: 'absolute',
-          width: 600, height: 600,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(15,110,86,0.25) 0%, transparent 70%)',
-          top: '10%', left: '50%', transform: 'translateX(-50%)',
-          filter: 'blur(40px)',
-        }} />
-        <div style={{
-          position: 'absolute',
-          width: 400, height: 400,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(29,158,117,0.12) 0%, transparent 70%)',
-          bottom: '20%', right: '10%',
-          filter: 'blur(60px)',
-        }} />
-        {/* Grid overlay */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `
-            linear-gradient(rgba(29,158,117,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(29,158,117,0.04) 1px, transparent 1px)
-          `,
-          backgroundSize: '60px 60px',
-        }} />
-      </div>
+      {/* No DOM orbs / grid here — the WebGL mesh behind the canvas IS the background. */}
 
       <div style={{
         maxWidth: 900,
