@@ -1,4 +1,5 @@
 import World from './components/World'
+import Cursor from './components/Cursor'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Services from './components/Services'
@@ -32,6 +33,7 @@ function App() {
   return (
     <>
       <World />
+      <Cursor />
       <Navbar />
       <div id="scroll-root">
         <div id="scroll-content">

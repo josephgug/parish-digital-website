@@ -25,7 +25,9 @@ export default function About() {
           style={{ position: 'relative' }}
         >
           <div style={{
-            background: 'rgba(13,26,21,0.8)',
+            background: 'rgba(10,20,17,0.6)',
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
             border: '1px solid rgba(26,48,40,0.8)',
             borderRadius: 20,
             padding: '40px',

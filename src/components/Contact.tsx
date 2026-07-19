@@ -3,7 +3,7 @@ import { useRef, useState } from 'react'
 
 const inputStyle = {
   width: '100%',
-  background: 'rgba(8,15,13,0.8)',
+  background: 'rgba(8,15,13,0.62)',
   border: '1px solid rgba(26,48,40,0.9)',
   borderRadius: 10,
   padding: '12px 16px',
@@ -75,7 +75,9 @@ export default function Contact() {
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.1 }}
             style={{
-              background: 'rgba(13,26,21,0.7)',
+              background: 'rgba(10,20,17,0.6)',
+              backdropFilter: 'blur(14px)',
+              WebkitBackdropFilter: 'blur(14px)',
               border: '1px solid rgba(26,48,40,0.8)',
               borderRadius: 16, padding: '40px 32px',
             }}
@@ -169,7 +171,9 @@ export default function Contact() {
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.15 }}
             style={{
-              background: 'rgba(13,26,21,0.7)',
+              background: 'rgba(10,20,17,0.6)',
+              backdropFilter: 'blur(14px)',
+              WebkitBackdropFilter: 'blur(14px)',
               border: '1px solid rgba(26,48,40,0.8)',
               borderRadius: 16, padding: '40px 32px',
             }}
@@ -276,6 +280,7 @@ export default function Contact() {
 
                 <motion.button
                   type="submit"
+                  data-magnetic
                   disabled={status === 'sending'}
                   whileHover={status !== 'sending' ? { scale: 1.02 } : {}}
                   whileTap={status !== 'sending' ? { scale: 0.98 } : {}}

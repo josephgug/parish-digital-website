@@ -72,7 +72,9 @@ function ServiceCard({ service, index }: { service: typeof services[0], index: n
       transition={{ duration: 0.6, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -4 }}
       style={{
-        background: 'rgba(13,26,21,0.7)',
+        background: 'rgba(10,20,17,0.55)',
+        backdropFilter: 'blur(14px)',
+        WebkitBackdropFilter: 'blur(14px)',
         border: '1px solid rgba(26,48,40,0.8)',
         borderRadius: 16,
         padding: '32px 28px',
@@ -87,12 +89,12 @@ function ServiceCard({ service, index }: { service: typeof services[0], index: n
       onMouseEnter={e => {
         const el = e.currentTarget as HTMLElement
         el.style.borderColor = 'rgba(29,158,117,0.4)'
-        el.style.background = 'rgba(13,26,21,0.95)'
+        el.style.background = 'rgba(10,20,17,0.78)'
       }}
       onMouseLeave={e => {
         const el = e.currentTarget as HTMLElement
         el.style.borderColor = 'rgba(26,48,40,0.8)'
-        el.style.background = 'rgba(13,26,21,0.7)'
+        el.style.background = 'rgba(10,20,17,0.55)'
       }}
     >
       {/* Corner accent */}

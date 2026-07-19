@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from 'motion/react'
+import { HAS_WEBGL } from '../engine/caps'
 
 const EASE = [0.22, 1, 0.36, 1] as [number, number, number, number]
 
@@ -10,7 +11,8 @@ const EASE = [0.22, 1, 0.36, 1] as [number, number, number, number]
 const INTRO = 2.4
 
 export default function Hero() {
-  const reduced = useReducedMotion()
+  // no canvas => no formation to wait for, so don't hold the copy back
+  const reduced = useReducedMotion() || !HAS_WEBGL
   const fadeUp = (delay = 0) => ({
     initial: reduced ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 },
     animate: { opacity: 1, y: 0 },
@@ -100,6 +102,7 @@ export default function Hero() {
         }}>
           <motion.a
             href="#contact"
+            data-magnetic
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             style={{
@@ -115,6 +118,7 @@ export default function Hero() {
           </motion.a>
           <motion.a
             href="#services"
+            data-magnetic
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             style={{

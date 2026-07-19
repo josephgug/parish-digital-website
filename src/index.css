@@ -69,6 +69,46 @@ body {
   backface-visibility: hidden;
 }
 
+/* ---- custom cursor (fine pointers only, never under reduced motion) ---- */
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 90;
+  border-radius: 50%;
+  margin-left: -50%;
+  margin-top: -50%;
+  will-change: transform;
+  display: none;
+}
+.has-cursor .cursor-dot,
+.has-cursor .cursor-ring {
+  display: block;
+}
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  background: #5dcaa5;
+  box-shadow: 0 0 10px rgba(93, 202, 165, 0.9);
+}
+.cursor-ring {
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(93, 202, 165, 0.6);
+  transition: opacity 0.25s;
+}
+.has-cursor,
+.has-cursor a,
+.has-cursor button {
+  cursor: none;
+}
+
+[data-magnetic] {
+  will-change: transform;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -90,6 +130,14 @@ body {
 /* ---- no-WebGL fallback: give the browser its scroll back ---- */
 .no-webgl #world {
   display: none;
+}
+/* keep the brand atmosphere even without a canvas */
+.no-webgl body {
+  background:
+    radial-gradient(60% 40% at 50% 0%, rgba(15, 110, 86, 0.2) 0%, transparent 70%),
+    radial-gradient(50% 40% at 90% 60%, rgba(29, 158, 117, 0.09) 0%, transparent 70%),
+    #080f0d;
+  background-attachment: fixed;
 }
 .no-webgl,
 .no-webgl body {

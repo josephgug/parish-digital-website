@@ -13,7 +13,6 @@ import { PD, vec3 } from '../palette'
 import { LOGO_Z, WAYPOINTS } from '../waypoints'
 
 const INTRO_SCALE = 1.3
-const CTA_SCALE = 2.0
 
 const vert = /* glsl */ `
   attribute vec3 aHome;
@@ -33,6 +32,7 @@ const vert = /* glsl */ `
   uniform float uScrollDelta;
   uniform vec3 uPointer;
   uniform float uRepel;
+  uniform float uLogoScale;
 
   varying float vAlpha;
   varying float vHot;
@@ -51,7 +51,7 @@ const vert = /* glsl */ `
     p = mix(p, aIntro, uForm);
 
     float w = smoothstep(18.0, 3.0, abs(aHome.z - ${LOGO_Z.toFixed(1)}));
-    p = mix(p, aCta, uContract * w);
+    p = mix(p, vec3(aCta.xy * uLogoScale, aCta.z), uContract * w);
     p += aBurst * uBurst * w * 30.0;
 
     vec3 d = p - uPointer;
@@ -135,8 +135,9 @@ export class Particles implements System {
       intro[i * 3 + 1] = introXY[i * 2 + 1] * INTRO_SCALE
       intro[i * 3 + 2] = jz
 
-      cta[i * 3] = ctaXY[i * 2] * CTA_SCALE
-      cta[i * 3 + 1] = ctaXY[i * 2 + 1] * CTA_SCALE
+      // unit coords; uLogoScale frames them to the viewport each resize
+      cta[i * 3] = ctaXY[i * 2]
+      cta[i * 3 + 1] = ctaXY[i * 2 + 1]
       cta[i * 3 + 2] = LOGO_Z + jz
 
       const ba = rand() * Math.PI * 2
@@ -169,6 +170,7 @@ export class Particles implements System {
       uScrollDelta: { value: 0 },
       uOpacity: { value: 1 },
       uRepel: { value: 0 },
+      uLogoScale: { value: 2 },
       uPointer: { value: this.pointerWorld },
       uTeal: { value: new THREE.Vector3(...vec3(PD.teal)) },
       uMark: { value: new THREE.Vector3(...vec3(PD.mark)) },
@@ -205,7 +207,9 @@ export class Particles implements System {
     const contactAt = WAYPOINTS[4].at
     const p = ctx.progress
     const cTarget = crange(p, contactAt - 0.06, contactAt + 0.05, 0, 1)
-    const bTarget = crange(p, Math.min(0.93, contactAt + 0.09), 1, 0, 1)
+    // hold the assembled logomark before the burst — section offsets differ per
+    // viewport, so the floor keeps the beat from collapsing on tall layouts
+    const bTarget = crange(p, Math.max(0.945, contactAt + 0.11), 1, 0, 1)
     this.contract = ctx.reduced ? cTarget : lerpHz(cTarget, this.contract, 0.12)
     this.burst = ctx.reduced ? bTarget : lerpHz(bTarget, this.burst, 0.12)
 
@@ -228,6 +232,7 @@ export class Particles implements System {
     this.uniforms.uBurst.value = this.burst
     this.uniforms.uCamZ.value = ctx.camera.position.z
     this.uniforms.uScrollDelta.value = ctx.uScrollDelta
+    this.uniforms.uLogoScale.value = this.engine.logoScale
     this.uniforms.uRepel.value = ctx.reduced ? 0 : this.repel
     this.uniforms.uSize.value =
       ctx.size.h / (2 * Math.tan((ctx.camera.fov * Math.PI) / 360))

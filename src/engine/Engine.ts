@@ -59,6 +59,8 @@ export class Engine {
   /** signature-moment state — written by MeshNet, read by the post chain + DOM */
   contractAmount = 0
   burstAmount = 0
+  /** world scale for the logomark formation, framed to the current viewport */
+  logoScale = 2
 
   private canvas: HTMLCanvasElement
   private content: HTMLElement | null
@@ -223,6 +225,15 @@ export class Engine {
     this.renderer.setSize(w, h, false)
     this.camera.aspect = w / h
     this.camera.updateProjectionMatrix()
+
+    // Frame the logomark formation to the viewport. Portrait is much narrower
+    // than it is short, so a fixed world scale crops the signature moment on
+    // phones — mobile-first means solving this here, not as a port.
+    const dist = 16
+    const halfH = dist * Math.tan((28 * Math.PI) / 360)
+    const halfW = halfH * (w / h)
+    this.logoScale = 0.72 * Math.min(halfW / 1.5, halfH / 1.27)
+
     this.measureContent()
     const ctx = this.ctx(16.667)
     for (const s of this.systems) s.resize?.(ctx)

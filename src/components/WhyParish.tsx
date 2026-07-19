@@ -56,13 +56,15 @@ function PillarCard({ pillar, index }: { pillar: typeof pillars[0], index: numbe
       className={`pillar-cell pillar-${index}`}
       style={{
         padding: '40px 36px',
-        background: 'rgba(13,26,21,0.5)',
+        background: 'rgba(10,20,17,0.45)',
+        backdropFilter: 'blur(14px)',
+        WebkitBackdropFilter: 'blur(14px)',
         borderRight: index % 2 === 0 ? '1px solid rgba(26,48,40,0.6)' : 'none',
         borderBottom: index < 2 ? '1px solid rgba(26,48,40,0.6)' : 'none',
         transition: 'background 0.3s',
       }}
-      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(13,26,21,0.9)')}
-      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(13,26,21,0.5)')}
+      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(10,20,17,0.72)')}
+      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(10,20,17,0.45)')}
     >
       <div style={{
         width: 48, height: 48, borderRadius: 12,

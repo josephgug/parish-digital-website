@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { getEngine, useUiState } from '../engine/store'
+import { HAS_WEBGL } from '../engine/caps'
 
 const links = [
   { label: 'Services', href: '#services' },
@@ -28,7 +29,7 @@ export default function Navbar() {
         id="site-header"
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, delay: 2.2, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.6, delay: HAS_WEBGL ? 2.2 : 0, ease: [0.22, 1, 0.36, 1] }}
         style={{
           position: 'fixed',
           top: 0, left: 0, right: 0,
@@ -75,6 +76,7 @@ export default function Navbar() {
               })}
               <a
                 href="#contact"
+                data-magnetic
                 style={{
                   marginLeft: 8,
                   background: 'linear-gradient(135deg, #1D9E75, #0F6E56)',

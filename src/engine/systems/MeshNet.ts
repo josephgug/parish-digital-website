@@ -13,7 +13,6 @@ import { LOGO_Z, WAYPOINTS } from '../waypoints'
 const NODE_COUNT = 380
 const CORRIDOR_NEAR = 15
 const CORRIDOR_FAR = -46
-const LOGO_SCALE = 2.0
 
 const nodeVert = /* glsl */ `
   attribute vec3 aPos;
@@ -27,6 +26,7 @@ const nodeVert = /* glsl */ `
   uniform float uTime;
   uniform float uCamZ;
   uniform float uScrollDelta;
+  uniform float uLogoScale;
 
   varying vec2 vUv;
   varying float vAct;
@@ -34,7 +34,8 @@ const nodeVert = /* glsl */ `
 
   void main() {
     vUv = uv;
-    vec3 p = mix(aPos, aLogo, uContract);
+    vec3 target = vec3(aLogo.xy * uLogoScale, aLogo.z);
+    vec3 p = mix(aPos, target, uContract);
     p += aBurst * uBurst * 26.0;
 
     // gentle organic drift so the network never reads as a static lattice
@@ -85,13 +86,15 @@ const edgeVert = /* glsl */ `
   uniform float uBurst;
   uniform float uTime;
   uniform float uCamZ;
+  uniform float uLogoScale;
 
   varying float vT;
   varying float vSeed;
   varying float vAct;
 
   void main() {
-    vec3 p = mix(aPos, aLogo, uContract);
+    vec3 target = vec3(aLogo.xy * uLogoScale, aLogo.z);
+    vec3 p = mix(aPos, target, uContract);
     p += aBurst * uBurst * 26.0;
     float dr = 1.0 - uContract;
     p.x += sin(uTime * 0.31 + aSeed * 6.2831) * 0.11 * dr;
@@ -164,8 +167,9 @@ export class MeshNet implements System {
       pos[i * 3 + 1] = Math.sin(ang) * rad * 0.74
       pos[i * 3 + 2] = z
 
-      logo[i * 3] = logoXY[i * 2] * LOGO_SCALE
-      logo[i * 3 + 1] = logoXY[i * 2 + 1] * LOGO_SCALE
+      // unit coords; uLogoScale frames them to the viewport each resize
+      logo[i * 3] = logoXY[i * 2]
+      logo[i * 3 + 1] = logoXY[i * 2 + 1]
       logo[i * 3 + 2] = LOGO_Z + (rand() - 0.5) * 0.35
 
       // burst direction: outward from the mark, biased up-and-toward-camera (the nav)
@@ -199,6 +203,7 @@ export class MeshNet implements System {
       uBurst: { value: 0 },
       uCamZ: { value: 8 },
       uScrollDelta: { value: 0 },
+      uLogoScale: { value: 2 },
       uOpacity: { value: 1 },
       uPulses: { value: ctx.tier.edgePulses ? 1 : 0 },
       uTeal: { value: new THREE.Vector3(...vec3(PD.teal)) },
@@ -297,7 +302,9 @@ export class MeshNet implements System {
     const contactAt = WAYPOINTS[4].at
     const p = ctx.progress
     const cTarget = crange(p, contactAt - 0.06, contactAt + 0.05, 0, 1)
-    const bTarget = crange(p, Math.min(0.93, contactAt + 0.09), 1, 0, 1)
+    // hold the assembled logomark before the burst — section offsets differ per
+    // viewport, so the floor keeps the beat from collapsing on tall layouts
+    const bTarget = crange(p, Math.max(0.945, contactAt + 0.11), 1, 0, 1)
 
     // ease the signature blend so a hard flick can't snap it
     this.contract = ctx.reduced ? cTarget : lerpHz(cTarget, this.contract, 0.12)
@@ -312,6 +319,7 @@ export class MeshNet implements System {
     this.uniforms.uBurst.value = this.burst
     this.uniforms.uCamZ.value = ctx.camera.position.z
     this.uniforms.uScrollDelta.value = ctx.uScrollDelta
+    this.uniforms.uLogoScale.value = this.engine.logoScale
   }
 
   dispose() {
