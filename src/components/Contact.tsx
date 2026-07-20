@@ -93,7 +93,7 @@ export default function Contact() {
             Ready to grow your business?
           </h2>
           <p style={{ fontSize: 17, color: '#6a9e8a', maxWidth: 480, margin: '0 auto', lineHeight: 1.65 }}>
-            Tell us about your business and what you're trying to solve. We'll follow up within one business day.
+            Tell me about your business and what's slowing it down. I'll give you a straight answer on whether AI can help, how it would make or save you money, and what it would take to build. No pressure, no jargon, no generic pitch.
           </p>
         </motion.div>
 
@@ -194,7 +194,7 @@ export default function Contact() {
                   display: 'inline-block',
                   animation: 'pulse 2s infinite',
                 }} />
-                Within 1 business day
+                I answer every message personally — usually within a day.
               </div>
             </div>
           </motion.div>

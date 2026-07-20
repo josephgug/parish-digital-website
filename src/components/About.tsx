@@ -126,13 +126,10 @@ export default function About() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <p style={{ fontSize: 15.5, color: '#6a9e8a', lineHeight: 1.75, margin: 0 }}>
-              Parish Digital was founded with a simple belief: local businesses in Louisiana deserve the same cutting-edge digital tools that big-city brands have — without the big-city price tag or the runaround.
+              Parish Digital is run by Joe Guglielmo — a former Vice President at a commercial bank who analyzed everything from small-business loans to $100M+ corporate deals, and the owner-operator of Mudderswag, a profitable business he built from the ground up.
             </p>
             <p style={{ fontSize: 15.5, color: '#6a9e8a', lineHeight: 1.75, margin: 0 }}>
-              We work with gun ranges, med spas, restaurants, contractors, and service businesses across the Bossier City and Shreveport area. We know this market, and we know what works here.
-            </p>
-            <p style={{ fontSize: 15.5, color: '#6a9e8a', lineHeight: 1.75, margin: 0 }}>
-              Our approach is straightforward: understand your business, build smart systems, and stay in your corner long after launch day.
+              That combination is the whole point. I've read the financials, the tax returns, and the operations of hundreds of businesses, so I actually understand how yours makes money. And I run the exact automations, voice agents, and websites I sell inside my own companies first — so what you get is already proven, built by someone who's sat on both sides of the table.
             </p>
           </div>
 
@@ -142,7 +139,9 @@ export default function About() {
             gap: 12,
             flexWrap: 'wrap',
           }}>
-            {['Bossier City, LA', 'Locally Owned', 'AI Specialists'].map(tag => (
+            {/* Copy v2 gives these as stat/label pairs; kept as single pills so the
+                existing flex-wrap tag row is preserved rather than re-marked-up. */}
+            {['Bossier City, LA — Owner-operated', 'Ex-Bank VP — Finance-grade analysis', 'Proven in-house — We use what we sell'].map(tag => (
               <span key={tag} style={{
                 fontSize: 13, fontWeight: 600,
                 color: '#5DCAA5',
