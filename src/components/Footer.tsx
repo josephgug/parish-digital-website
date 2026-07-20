@@ -52,9 +52,11 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer style={{
+    <footer id="footer" style={{
       borderTop: '1px solid rgba(26,48,40,0.7)',
       padding: '64px 24px 32px',
+      background: 'linear-gradient(180deg, rgba(8,15,13,0) 0%, rgba(8,15,13,0.82) 22%, rgba(8,15,13,0.94) 100%)',
+      backdropFilter: 'blur(6px)',
     }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <div className="footer-grid" style={{

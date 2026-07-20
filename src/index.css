@@ -20,8 +20,11 @@
   box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {
@@ -31,6 +34,159 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---- the one WebGL2 canvas, behind everything ---- */
+#world {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+  /* reduced-motion / pre-boot poster so the first paint is never a black box */
+  background:
+    radial-gradient(60% 50% at 50% 32%, rgba(15, 110, 86, 0.22) 0%, transparent 70%),
+    radial-gradient(40% 40% at 85% 88%, rgba(29, 158, 117, 0.1) 0%, transparent 70%),
+    #080f0d;
+}
+
+/* ---- the DOM content layer, transformed by the same scroll value ---- */
+#scroll-root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 1;
+  touch-action: none;
+}
+
+#scroll-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* ---- custom cursor (fine pointers only, never under reduced motion) ---- */
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  border-radius: 50%;
+  will-change: transform;
+  display: none;
+}
+/* Centred with PX margins, never margin:-50%. Percentage margins resolve
+   against the containing block's WIDTH on BOTH axes, so on a fixed element
+   -50% also meant -50% of the viewport WIDTH vertically — which parked the
+   cursor ~720px above the pointer, off-screen, on a 1440px window. */
+/* Appearance only — tracking, pointer-events and the touch/reduced-motion
+   gating are untouched.
+
+   The dot used to be #5dcaa5, which is PD.mark: the exact colour of the mesh
+   node cores, at roughly their size. Against a few hundred same-hue, same-size
+   glowing particles the pointer read as one more background dot. Fixed on three
+   independent axes so no single background can defeat it:
+     HUE   — amber #E8A657, the brand's warm accent, opposite the teal mesh
+     VALUE — a hard near-black separator ring, so it also separates from a
+             bright bloom or a pale service card
+     FORM  — a solid core inside a much larger thick ring; no mesh particle has
+             that structure at any size
+
+   mix-blend-mode: difference was considered and rejected — over this palette it
+   turns muddy mid-teal rather than inverting cleanly, and it would make the
+   pointer's colour depend on whatever it happens to be over. */
+.cursor-dot {
+  width: 11px;
+  height: 11px;
+  margin-left: -5.5px;
+  margin-top: -5.5px;
+  background: #e8a657;
+  box-shadow:
+    0 0 0 2px rgba(3, 10, 8, 0.9),
+    0 0 12px 2px rgba(232, 166, 87, 0.85),
+    0 0 26px rgba(232, 166, 87, 0.4);
+}
+.cursor-ring {
+  width: 38px;
+  height: 38px;
+  margin-left: -19px;
+  margin-top: -19px;
+  border: 2px solid rgba(232, 166, 87, 0.9);
+  box-shadow:
+    0 0 0 1px rgba(3, 10, 8, 0.75),
+    inset 0 0 0 1px rgba(3, 10, 8, 0.55),
+    0 0 14px rgba(232, 166, 87, 0.3);
+  transition: opacity 0.25s;
+}
+/* The dot tracks from the pointermove listener, so it is correct in every
+   state and can always be shown. The ring is driven by the engine frame loop,
+   so it only appears once that loop is actually running — otherwise it would
+   sit frozen mid-screen. */
+.has-cursor .cursor-dot {
+  display: block;
+}
+.has-cursor.has-cursor-ring .cursor-ring {
+  display: block;
+}
+.has-cursor,
+.has-cursor a,
+.has-cursor button {
+  cursor: none;
+}
+
+[data-magnetic] {
+  will-change: transform;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Nav flash when the mesh bursts out of the logomark at the CTA */
+.nav-burst #site-header {
+  box-shadow: 0 0 60px rgba(93, 202, 165, 0.45);
+  border-bottom-color: rgba(93, 202, 165, 0.55) !important;
+}
+
+/* ---- no-WebGL fallback: give the browser its scroll back ---- */
+.no-webgl #world {
+  display: none;
+}
+/* keep the brand atmosphere even without a canvas */
+.no-webgl body {
+  background:
+    radial-gradient(60% 40% at 50% 0%, rgba(15, 110, 86, 0.2) 0%, transparent 70%),
+    radial-gradient(50% 40% at 90% 60%, rgba(29, 158, 117, 0.09) 0%, transparent 70%),
+    #080f0d;
+  background-attachment: fixed;
+}
+.no-webgl,
+.no-webgl body {
+  overflow: auto;
+  height: auto;
+}
+.no-webgl #scroll-root {
+  position: static;
+  overflow: visible;
+  touch-action: auto;
+}
+.no-webgl #scroll-content {
+  position: static;
+  transform: none !important;
 }
 
 ::selection {
@@ -59,9 +215,35 @@ textarea::placeholder {
   color: #3a5e50;
 }
 
-/* Scroll offset for fixed navbar */
-#services, #why, #about, #contact {
-  scroll-margin-top: 80px;
+@media (prefers-reduced-motion: reduce) {
+  #scroll-content {
+    will-change: auto;
+  }
+}
+
+/* ---- mobile copy containment ----------------------------------------
+   #scroll-root is fixed + overflow:hidden, so copy wider than the viewport is
+   silently CLIPPED instead of becoming scrollable — it just reads as text
+   running off the edge with no way to get it back. Contain it at the source.
+   Real devices also break in ways a resized desktop window does not: long
+   unbroken tokens (emails, URLs) and grid floors wider than a 320px screen. */
+#scroll-content :where(h1, h2, h3, h4, p, li, span, a, blockquote, label) {
+  overflow-wrap: break-word;
+}
+#scroll-content :where(img, svg, video, canvas) {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 640px) {
+  #scroll-content section {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  /* nothing in the copy layer may exceed the screen, whatever it is */
+  #scroll-content * {
+    max-width: 100%;
+  }
 }
 
 /* Services grid: 3 top row, 2 centered bottom row */

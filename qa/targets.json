@@ -1,0 +1,19 @@
+{
+  "col": "uScrollDelta",
+  "decay": {
+    "val": 0.9138,
+    "tol": 0.015
+  },
+  "halfLife": {
+    "val": 7.69,
+    "tol": 1.5
+  },
+  "satPeak": {
+    "min": 2.699,
+    "max": 3.299
+  },
+  "signed": true,
+  "fpsMedianDtMaxMs": 22,
+  "fittedFrom": "capture",
+  "fittedAt": "2026-07-19T21:46:30.555Z"
+}

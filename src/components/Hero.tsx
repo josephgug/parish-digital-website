@@ -1,16 +1,27 @@
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
+import { HAS_WEBGL } from '../engine/caps'
 
 const EASE = [0.22, 1, 0.36, 1] as [number, number, number, number]
 
-const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 32 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.7, delay, ease: EASE },
-})
+/**
+ * The hero copy resolves in AFTER the WebGL logomark assembles and disperses
+ * (~2.4s). Sequencing it this way is the load choreography — otherwise the
+ * headline sits on top of the signature formation and neither reads.
+ */
+const INTRO = 2.4
 
 export default function Hero() {
+  // no canvas => no formation to wait for, so don't hold the copy back
+  const reduced = useReducedMotion() || !HAS_WEBGL
+  const fadeUp = (delay = 0) => ({
+    initial: reduced ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.7, delay: reduced ? 0 : INTRO + delay, ease: EASE },
+  })
+
   return (
     <section
+      id="hero"
       style={{
         minHeight: '100vh',
         display: 'flex',
@@ -21,37 +32,7 @@ export default function Hero() {
         paddingTop: 72,
       }}
     >
-      {/* Background gradient orbs */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none',
-        overflow: 'hidden',
-      }}>
-        <div style={{
-          position: 'absolute',
-          width: 600, height: 600,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(15,110,86,0.25) 0%, transparent 70%)',
-          top: '10%', left: '50%', transform: 'translateX(-50%)',
-          filter: 'blur(40px)',
-        }} />
-        <div style={{
-          position: 'absolute',
-          width: 400, height: 400,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(29,158,117,0.12) 0%, transparent 70%)',
-          bottom: '20%', right: '10%',
-          filter: 'blur(60px)',
-        }} />
-        {/* Grid overlay */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `
-            linear-gradient(rgba(29,158,117,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(29,158,117,0.04) 1px, transparent 1px)
-          `,
-          backgroundSize: '60px 60px',
-        }} />
-      </div>
+      {/* No DOM orbs / grid here — the WebGL mesh behind the canvas IS the background. */}
 
       <div style={{
         maxWidth: 900,
@@ -91,15 +72,15 @@ export default function Hero() {
           color: '#e8f5f0',
           margin: '0 0 28px',
         }}>
-          AI automation for<br />
+          AI that runs your business —<br />
           <span style={{
             background: 'linear-gradient(135deg, #5DCAA5 0%, #1D9E75 50%, #0F6E56 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
           }}>
-            businesses that don't
+            built by someone who's
           </span>
-          <br />have time to wait.
+          <br />actually run one.
         </motion.h1>
 
         {/* Subtext */}
@@ -111,7 +92,9 @@ export default function Hero() {
           margin: '0 auto 48px',
           fontWeight: 400,
         }}>
-          Your business, amplified.
+          Voice agents, automations, and websites that answer your calls, work your
+          leads, and kill the busywork — built around how your business actually
+          makes money.
         </motion.p>
 
         {/* CTAs */}
@@ -121,6 +104,7 @@ export default function Hero() {
         }}>
           <motion.a
             href="#contact"
+            data-magnetic
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             style={{
@@ -132,10 +116,11 @@ export default function Hero() {
               display: 'inline-block',
             }}
           >
-            Start Your Project →
+            Book a Free Strategy Call →
           </motion.a>
           <motion.a
             href="#services"
+            data-magnetic
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             style={{
@@ -147,7 +132,7 @@ export default function Hero() {
               display: 'inline-block',
             }}
           >
-            See Our Services
+            See What We Build
           </motion.a>
         </motion.div>
 
@@ -158,15 +143,15 @@ export default function Hero() {
           flexWrap: 'wrap',
         }}>
           {[
-            { value: 'Local', label: 'Louisiana-Based' },
-            { value: 'AI-First', label: 'Every Solution' },
-            { value: '24/7', label: 'Voice Agents' },
-            { value: 'Real', label: 'Results, Not Fluff' },
+            { value: 'Ex-Bank VP', label: 'Analyzes your business first' },
+            { value: 'We Run It Too', label: 'Same systems in our own companies' },
+            { value: 'ROI-First', label: 'Built to make you money' },
+            { value: 'Local', label: 'Bossier City, Louisiana' },
           ].map(stat => (
             <div key={stat.label} style={{ textAlign: 'center' }}>
               <div style={{
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontSize: 22, fontWeight: 800,
+                fontSize: 'clamp(18px, 5vw, 22px)', fontWeight: 800,
                 color: '#5DCAA5', lineHeight: 1,
                 marginBottom: 4,
               }}>
@@ -182,8 +167,16 @@ export default function Hero() {
 
       {/* Scroll indicator */}
       <motion.div
-        animate={{ y: [0, 8, 0] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        initial={reduced ? { opacity: 1 } : { opacity: 0 }}
+        animate={reduced ? { opacity: 1 } : { opacity: 1, y: [0, 8, 0] }}
+        transition={
+          reduced
+            ? { duration: 0 }
+            : {
+                opacity: { duration: 0.6, delay: INTRO + 0.6 },
+                y: { duration: 2, repeat: Infinity, ease: 'easeInOut', delay: INTRO + 0.6 },
+              }
+        }
         style={{
           position: 'absolute', bottom: 36, left: '50%',
           transform: 'translateX(-50%)',

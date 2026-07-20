@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
+import { getEngine, useUiState } from '../engine/store'
+import { HAS_WEBGL } from '../engine/caps'
 
 const links = [
   { label: 'Services', href: '#services' },
@@ -9,19 +11,14 @@ const links = [
 ]
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false)
+  // window.scrollY is always 0 here — the virtual scroll owns position.
+  const { scrolled, active } = useUiState()
   const [open, setOpen] = useState(false)
 
+  // Block the virtual scroll while the mobile menu is open
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40)
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  // Lock body scroll when menu is open
-  useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    getEngine()?.setBlocked(open)
+    return () => getEngine()?.setBlocked(false)
   }, [open])
 
   const close = () => setOpen(false)
@@ -29,14 +26,15 @@ export default function Navbar() {
   return (
     <>
       <motion.header
+        id="site-header"
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.6, delay: HAS_WEBGL ? 2.2 : 0, ease: [0.22, 1, 0.36, 1] }}
         style={{
           position: 'fixed',
           top: 0, left: 0, right: 0,
           zIndex: 50,
-          transition: 'background 0.3s, border-color 0.3s, backdrop-filter 0.3s',
+          transition: 'background 0.3s, border-color 0.3s, backdrop-filter 0.3s, box-shadow 0.4s',
           background: scrolled || open ? 'rgba(8,15,13,0.97)' : 'transparent',
           backdropFilter: scrolled || open ? 'blur(12px)' : 'none',
           borderBottom: scrolled && !open ? '1px solid rgba(29,158,117,0.15)' : '1px solid transparent',
@@ -55,22 +53,30 @@ export default function Navbar() {
 
             {/* Desktop nav */}
             <nav style={{ display: 'flex', alignItems: 'center', gap: 8 }} className="hide-mobile">
-              {links.map(l => (
-                <a
-                  key={l.href}
-                  href={l.href}
-                  style={{
-                    color: '#9ac9b8', fontSize: 14, fontWeight: 500, textDecoration: 'none',
-                    padding: '6px 14px', borderRadius: 8, transition: 'color 0.2s',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#5DCAA5')}
-                  onMouseLeave={e => (e.currentTarget.style.color = '#9ac9b8')}
-                >
-                  {l.label}
-                </a>
-              ))}
+              {links.map(l => {
+                const isActive = active === l.href.slice(1)
+                return (
+                  <a
+                    key={l.href}
+                    href={l.href}
+                    aria-current={isActive ? 'true' : undefined}
+                    style={{
+                      color: isActive ? '#5DCAA5' : '#9ac9b8',
+                      fontSize: 14, fontWeight: 500, textDecoration: 'none',
+                      padding: '6px 14px', borderRadius: 8,
+                      transition: 'color 0.25s, background 0.25s',
+                      background: isActive ? 'rgba(29,158,117,0.10)' : 'transparent',
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.color = '#5DCAA5')}
+                    onMouseLeave={e => (e.currentTarget.style.color = isActive ? '#5DCAA5' : '#9ac9b8')}
+                  >
+                    {l.label}
+                  </a>
+                )
+              })}
               <a
                 href="#contact"
+                data-magnetic
                 style={{
                   marginLeft: 8,
                   background: 'linear-gradient(135deg, #1D9E75, #0F6E56)',

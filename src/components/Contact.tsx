@@ -3,7 +3,7 @@ import { useRef, useState } from 'react'
 
 const inputStyle = {
   width: '100%',
-  background: 'rgba(8,15,13,0.8)',
+  background: 'rgba(8,15,13,0.62)',
   border: '1px solid rgba(26,48,40,0.9)',
   borderRadius: 10,
   padding: '12px 16px',
@@ -15,19 +15,59 @@ const inputStyle = {
   boxSizing: 'border-box' as const,
 }
 
+/**
+ * Parish Digital's Formspree form, supplied by Joe 2026-07-20.
+ *
+ * Do NOT restore this from git history. The previous value here (mgojrgyp) was
+ * recovered from v1 (commit ab54356) and turned out to be the FORKSKINS LLC
+ * form — v1 had been pointing at the wrong company's inbox, so the history is
+ * an actively misleading source for this particular constant.
+ *
+ * A Formspree form ID is public by design — submit-only and rate-limited
+ * server-side — so it lives in the bundle, not in an env var a static build
+ * could not read anyway.
+ */
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mlgqnvnq'
+
 export default function Contact() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-60px' })
   const [form, setForm] = useState({ name: '', email: '', phone: '', business: '', message: '' })
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [error, setError] = useState<string | null>(null)
   const [focused, setFocused] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (status === 'sending') return
     setStatus('sending')
-    // Simulate send
-    await new Promise(r => setTimeout(r, 1200))
-    setStatus('sent')
+    setError(null)
+    try {
+      const res = await fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (!res.ok) {
+        // Formspree replies { errors: [{ field, message }] } on a rejected submission
+        const data = await res.json().catch(() => null)
+        const detail = data?.errors?.map((x: { message: string }) => x.message).filter(Boolean).join(' · ')
+        throw new Error(detail || `The form service rejected the submission (${res.status}).`)
+      }
+      setStatus('sent')
+    } catch (err) {
+      // A thrown TypeError here is the network itself (offline, DNS, blocked),
+      // not a validation failure — say something the visitor can act on.
+      const offline = err instanceof TypeError
+      setStatus('error')
+      setError(
+        offline
+          ? "Couldn't reach the server. Check your connection and try again."
+          : err instanceof Error && err.message
+            ? err.message
+            : 'Something went wrong sending your message.',
+      )
+    }
   }
 
   return (
@@ -59,13 +99,13 @@ export default function Contact() {
             Ready to grow your business?
           </h2>
           <p style={{ fontSize: 17, color: '#6a9e8a', maxWidth: 480, margin: '0 auto', lineHeight: 1.65 }}>
-            Tell us about your business and what you're trying to solve. We'll follow up within one business day.
+            Tell me about your business and what's slowing it down. I'll give you a straight answer on whether AI can help, how it would make or save you money, and what it would take to build. No pressure, no jargon, no generic pitch.
           </p>
         </motion.div>
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))',
           gap: 40,
           alignItems: 'start',
         }}>
@@ -75,7 +115,9 @@ export default function Contact() {
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.1 }}
             style={{
-              background: 'rgba(13,26,21,0.7)',
+              background: 'rgba(10,20,17,0.6)',
+              backdropFilter: 'blur(14px)',
+              WebkitBackdropFilter: 'blur(14px)',
               border: '1px solid rgba(26,48,40,0.8)',
               borderRadius: 16, padding: '40px 32px',
             }}
@@ -158,7 +200,7 @@ export default function Contact() {
                   display: 'inline-block',
                   animation: 'pulse 2s infinite',
                 }} />
-                Within 1 business day
+                I answer every message personally — usually within a day.
               </div>
             </div>
           </motion.div>
@@ -169,7 +211,9 @@ export default function Contact() {
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.15 }}
             style={{
-              background: 'rgba(13,26,21,0.7)',
+              background: 'rgba(10,20,17,0.6)',
+              backdropFilter: 'blur(14px)',
+              WebkitBackdropFilter: 'blur(14px)',
               border: '1px solid rgba(26,48,40,0.8)',
               borderRadius: 16, padding: '40px 32px',
             }}
@@ -194,7 +238,7 @@ export default function Contact() {
                 </div>
                 <h3 style={{
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontSize: 22, fontWeight: 700, color: '#e8f5f0', marginBottom: 12,
+                  fontSize: 'clamp(19px, 5vw, 22px)', fontWeight: 700, color: '#e8f5f0', marginBottom: 12,
                 }}>
                   Message received!
                 </h3>
@@ -274,8 +318,36 @@ export default function Contact() {
                   />
                 </div>
 
+                {/* Deliberately NOT a motion component: the failure path must render
+                    identically under prefers-reduced-motion, and an error is the one
+                    thing that should never wait on an animation. role=alert so screen
+                    readers hear it without moving focus off the field being fixed. */}
+                {status === 'error' && error && (
+                  <div
+                    role="alert"
+                    style={{
+                      display: 'flex', alignItems: 'flex-start', gap: 10,
+                      background: 'rgba(120,30,30,0.18)',
+                      border: '1px solid rgba(220,90,90,0.45)',
+                      borderRadius: 10, padding: '12px 14px',
+                      color: '#f0b4b4', fontSize: 14, lineHeight: 1.5,
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginTop: 1 }} aria-hidden="true">
+                      <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <span>
+                      {error} You can also email us directly at{' '}
+                      <a href="mailto:joseph@parishdigital.ai" style={{ color: '#5DCAA5' }}>
+                        joseph@parishdigital.ai
+                      </a>.
+                    </span>
+                  </div>
+                )}
+
                 <motion.button
                   type="submit"
+                  data-magnetic
                   disabled={status === 'sending'}
                   whileHover={status !== 'sending' ? { scale: 1.02 } : {}}
                   whileTap={status !== 'sending' ? { scale: 0.98 } : {}}
@@ -303,7 +375,7 @@ export default function Contact() {
                     el.style.boxShadow = '0 0 24px rgba(29,158,117,0.25)'
                   }}
                 >
-                  {status === 'sending' ? 'Sending...' : 'Send Message →'}
+                  {status === 'sending' ? 'Sending...' : status === 'error' ? 'Try Again →' : 'Send Message →'}
                 </motion.button>
               </form>
             )}

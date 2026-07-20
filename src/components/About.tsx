@@ -12,7 +12,7 @@ export default function About() {
       <div style={{
         maxWidth: 1100, margin: '0 auto',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))',
         gap: 64,
         alignItems: 'center',
       }}>
@@ -25,7 +25,9 @@ export default function About() {
           style={{ position: 'relative' }}
         >
           <div style={{
-            background: 'rgba(13,26,21,0.8)',
+            background: 'rgba(10,20,17,0.6)',
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
             border: '1px solid rgba(26,48,40,0.8)',
             borderRadius: 20,
             padding: '40px',
@@ -47,14 +49,14 @@ export default function About() {
               background: 'linear-gradient(135deg, rgba(15,110,86,0.3), rgba(29,158,117,0.15))',
               border: '1px solid rgba(29,158,117,0.3)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: 24, fontSize: 28,
+              marginBottom: 24, fontSize: 'clamp(22px, 6vw, 28px)',
             }}>
               ⚜️
             </div>
 
             <div style={{
               fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontSize: 28, fontWeight: 800,
+              fontSize: 'clamp(22px, 6vw, 28px)', fontWeight: 800,
               color: '#e8f5f0', lineHeight: 1.2,
               marginBottom: 16, letterSpacing: '-0.5px',
             }}>
@@ -124,32 +126,39 @@ export default function About() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <p style={{ fontSize: 15.5, color: '#6a9e8a', lineHeight: 1.75, margin: 0 }}>
-              Parish Digital was founded with a simple belief: local businesses in Louisiana deserve the same cutting-edge digital tools that big-city brands have — without the big-city price tag or the runaround.
+              Parish Digital is run by Joe Guglielmo — a former Vice President at a commercial bank who analyzed everything from small-business loans to $100M+ corporate deals, and the owner-operator of Mudderswag, a profitable business he built from the ground up.
             </p>
             <p style={{ fontSize: 15.5, color: '#6a9e8a', lineHeight: 1.75, margin: 0 }}>
-              We work with gun ranges, med spas, restaurants, contractors, and service businesses across the Bossier City and Shreveport area. We know this market, and we know what works here.
-            </p>
-            <p style={{ fontSize: 15.5, color: '#6a9e8a', lineHeight: 1.75, margin: 0 }}>
-              Our approach is straightforward: understand your business, build smart systems, and stay in your corner long after launch day.
+              That combination is the whole point. I've read the financials, the tax returns, and the operations of hundreds of businesses, so I actually understand how yours makes money. And I run the exact automations, voice agents, and websites I sell inside my own companies first — so what you get is already proven, built by someone who's sat on both sides of the table.
             </p>
           </div>
 
+          {/* True two-line value/label stats, matching the hero social-proof
+              strip (Copy v2.1 §8). The pill row could not carry the label
+              without collapsing both halves into one string. */}
           <div style={{
             marginTop: 36,
             display: 'flex',
-            gap: 12,
+            gap: 26,
             flexWrap: 'wrap',
           }}>
-            {['Bossier City, LA', 'Locally Owned', 'AI Specialists'].map(tag => (
-              <span key={tag} style={{
-                fontSize: 13, fontWeight: 600,
-                color: '#5DCAA5',
-                background: 'rgba(29,158,117,0.08)',
-                border: '1px solid rgba(29,158,117,0.2)',
-                padding: '6px 14px', borderRadius: 100,
-              }}>
-                {tag}
-              </span>
+            {[
+              { value: 'Bossier City, LA', label: 'Owner-operated' },
+              { value: 'Ex-Bank VP', label: 'Finance-grade analysis' },
+              { value: 'Proven in-house', label: 'We use what we sell' },
+            ].map(stat => (
+              <div key={stat.value}>
+                <div style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 'clamp(16px, 4vw, 19px)', fontWeight: 800,
+                  color: '#5DCAA5', lineHeight: 1.15, marginBottom: 4,
+                }}>
+                  {stat.value}
+                </div>
+                <div style={{ fontSize: 13, color: '#5a8c7a', fontWeight: 500 }}>
+                  {stat.label}
+                </div>
+              </div>
             ))}
           </div>
         </motion.div>
