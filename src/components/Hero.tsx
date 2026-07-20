@@ -149,7 +149,7 @@ export default function Hero() {
             <div key={stat.label} style={{ textAlign: 'center' }}>
               <div style={{
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontSize: 22, fontWeight: 800,
+                fontSize: 'clamp(18px, 5vw, 22px)', fontWeight: 800,
                 color: '#5DCAA5', lineHeight: 1,
                 marginBottom: 4,
               }}>

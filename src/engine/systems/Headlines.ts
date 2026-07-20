@@ -134,7 +134,12 @@ type Item = {
   mesh: THREE.Mesh
   mat: THREE.ShaderMaterial
   group: THREE.Group
+  /** measured width of the laid-out copy, in world units */
+  width: number
 }
+
+/** headlines are placed this far down the camera's forward axis (see placement) */
+const HEADLINE_DIST = 13
 
 export class Headlines implements System {
   order = 30
@@ -267,10 +272,42 @@ export class Headlines implements System {
         group.add(mesh)
         group.position.copy(this.placement(line.at))
         group.position.y += line.dy ?? 0
+
+        // real laid-out width, not the maxWidth cap — so copy that already
+        // fits is never shrunk on desktop
+        let minX = Infinity
+        let maxX = -Infinity
+        for (let i = 0; i < n; i++) {
+          minX = Math.min(minX, info.glyphBounds[i * 4])
+          maxX = Math.max(maxX, info.glyphBounds[i * 4 + 2])
+        }
+
         this.root.add(group)
-        this.items.push({ line, mesh, mat, group })
+        this.items.push({ line, mesh, mat, group, width: Math.max(0.001, maxX - minX) })
+        this.fit()
       },
     )
+  }
+
+  /**
+   * Portrait fitting. Headlines are billboarded 13 units in front of the
+   * camera, so the world width the viewport can show is driven by ASPECT: at
+   * fov 30 that is ~11 units across on a 1440x900 desktop but only ~3.2 on a
+   * 390x844 phone. The copy is authored up to 12 units wide, so on portrait it
+   * ran ~3.7x past both edges. Scale is only ever reduced, never increased —
+   * desktop, where the copy already fits, is untouched.
+   */
+  private fit() {
+    const { w, h } = this.engine.sizeOf()
+    const halfH = HEADLINE_DIST * Math.tan((30 * Math.PI) / 360)
+    const usable = halfH * (w / h) * 2 * 0.88 // 12% total side margin
+    for (const it of this.items) {
+      it.group.scale.setScalar(Math.min(1, usable / it.width))
+    }
+  }
+
+  resize() {
+    this.fit()
   }
 
   update(ctx: FrameCtx) {

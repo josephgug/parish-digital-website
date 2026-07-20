@@ -189,6 +189,11 @@ export class Engine {
     this.scroll.blocked = v
   }
 
+  /** Viewport size for systems that fit themselves outside the frame ctx. */
+  sizeOf() {
+    return this.size
+  }
+
   /** Default draw. The Composite system replaces this with the post chain. */
   renderFn: (ctx: FrameCtx) => void = () => this.renderer.render(this.scene, this.camera)
 

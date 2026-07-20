@@ -65,7 +65,7 @@ export default function Contact() {
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))',
           gap: 40,
           alignItems: 'start',
         }}>
@@ -198,7 +198,7 @@ export default function Contact() {
                 </div>
                 <h3 style={{
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontSize: 22, fontWeight: 700, color: '#e8f5f0', marginBottom: 12,
+                  fontSize: 'clamp(19px, 5vw, 22px)', fontWeight: 700, color: '#e8f5f0', marginBottom: 12,
                 }}>
                   Message received!
                 </h3>

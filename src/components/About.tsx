@@ -12,7 +12,7 @@ export default function About() {
       <div style={{
         maxWidth: 1100, margin: '0 auto',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))',
         gap: 64,
         alignItems: 'center',
       }}>
@@ -49,14 +49,14 @@ export default function About() {
               background: 'linear-gradient(135deg, rgba(15,110,86,0.3), rgba(29,158,117,0.15))',
               border: '1px solid rgba(29,158,117,0.3)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: 24, fontSize: 28,
+              marginBottom: 24, fontSize: 'clamp(22px, 6vw, 28px)',
             }}>
               ⚜️
             </div>
 
             <div style={{
               fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontSize: 28, fontWeight: 800,
+              fontSize: 'clamp(22px, 6vw, 28px)', fontWeight: 800,
               color: '#e8f5f0', lineHeight: 1.2,
               marginBottom: 16, letterSpacing: '-0.5px',
             }}>

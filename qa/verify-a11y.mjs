@@ -170,6 +170,38 @@ const browser = await chromium.launch({
   await ctx.close()
 }
 
+// ---- mobile copy containment -------------------------------------------
+// The DOM layer lives in a fixed overflow:hidden shell, so copy wider than the
+// screen is clipped rather than scrollable — invisible to a desktop resize.
+for (const w of [320, 390]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: 780 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 })
+  const page = await ctx.newPage()
+  await page.goto(url, { waitUntil: 'load' })
+  await page.waitForTimeout(3500)
+  const sw = await page.evaluate(() => document.documentElement.scrollWidth)
+  check(`${w}px: no horizontal overflow`, sw <= w, `scrollWidth ${sw} vs ${w}`)
+
+  // MSDF headlines are billboarded in the canvas — portrait aspect makes the
+  // visible world much narrower, so they must be fitted, not authored fixed.
+  const head = await page.evaluate(() => {
+    const e = window.__ENGINE
+    if (!e) return null
+    const halfH = 13 * Math.tan((30 * Math.PI) / 360)
+    const usable = halfH * (innerWidth / innerHeight) * 2
+    let over = 0
+    e.world.traverse((o) => {
+      if (!o.isMesh || !o.geometry?.attributes?.aBounds) return
+      const bs = o.geometry.attributes.aBounds.array
+      let mn = Infinity, mx = -Infinity
+      for (let i = 0; i < bs.length; i += 4) { mn = Math.min(mn, bs[i]); mx = Math.max(mx, bs[i + 2]) }
+      over = Math.max(over, (mx - mn) * o.parent.scale.x - usable)
+    })
+    return { usable: +usable.toFixed(2), over: +over.toFixed(2) }
+  })
+  check(`${w}px: MSDF headlines fit portrait`, head && head.over <= 0,
+    head ? `widest exceeds viewport by ${head.over} world units (usable ${head.usable})` : 'no engine')
+  await ctx.close()
+}
 
 await browser.close()
 console.log(pass ? '\nALL PASS — robustness gates green.' : '\nFAILED')

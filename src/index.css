@@ -201,6 +201,31 @@ textarea::placeholder {
   }
 }
 
+/* ---- mobile copy containment ----------------------------------------
+   #scroll-root is fixed + overflow:hidden, so copy wider than the viewport is
+   silently CLIPPED instead of becoming scrollable — it just reads as text
+   running off the edge with no way to get it back. Contain it at the source.
+   Real devices also break in ways a resized desktop window does not: long
+   unbroken tokens (emails, URLs) and grid floors wider than a 320px screen. */
+#scroll-content :where(h1, h2, h3, h4, p, li, span, a, blockquote, label) {
+  overflow-wrap: break-word;
+}
+#scroll-content :where(img, svg, video, canvas) {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 640px) {
+  #scroll-content section {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  /* nothing in the copy layer may exceed the screen, whatever it is */
+  #scroll-content * {
+    max-width: 100%;
+  }
+}
+
 /* Services grid: 3 top row, 2 centered bottom row */
 .services-grid {
   display: grid;
