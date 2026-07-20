@@ -16,12 +16,18 @@ const inputStyle = {
 }
 
 /**
- * The v1 Formspree form, recovered from commit ab54356 (branch
- * feat/activetheory-motion). A Formspree form ID is public by design — it is
- * submit-only and rate-limited server-side — so it lives in the bundle, not in
- * an env var that a static build could not read anyway.
+ * Parish Digital's Formspree form, supplied by Joe 2026-07-20.
+ *
+ * Do NOT restore this from git history. The previous value here (mgojrgyp) was
+ * recovered from v1 (commit ab54356) and turned out to be the FORKSKINS LLC
+ * form — v1 had been pointing at the wrong company's inbox, so the history is
+ * an actively misleading source for this particular constant.
+ *
+ * A Formspree form ID is public by design — submit-only and rate-limited
+ * server-side — so it lives in the bundle, not in an env var a static build
+ * could not read anyway.
  */
-const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mgojrgyp'
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mlgqnvnq'
 
 export default function Contact() {
   const ref = useRef(null)
