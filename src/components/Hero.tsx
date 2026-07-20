@@ -72,15 +72,15 @@ export default function Hero() {
           color: '#e8f5f0',
           margin: '0 0 28px',
         }}>
-          AI automation for<br />
+          AI that runs your business —<br />
           <span style={{
             background: 'linear-gradient(135deg, #5DCAA5 0%, #1D9E75 50%, #0F6E56 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
           }}>
-            businesses that don't
+            built by someone who's
           </span>
-          <br />have time to wait.
+          <br />actually run one.
         </motion.h1>
 
         {/* Subtext */}
@@ -92,7 +92,9 @@ export default function Hero() {
           margin: '0 auto 48px',
           fontWeight: 400,
         }}>
-          Your business, amplified.
+          Voice agents, automations, and websites that answer your calls, work your
+          leads, and kill the busywork — built around how your business actually
+          makes money.
         </motion.p>
 
         {/* CTAs */}
@@ -114,7 +116,7 @@ export default function Hero() {
               display: 'inline-block',
             }}
           >
-            Start Your Project →
+            Book a Free Strategy Call →
           </motion.a>
           <motion.a
             href="#services"
@@ -130,7 +132,7 @@ export default function Hero() {
               display: 'inline-block',
             }}
           >
-            See Our Services
+            See What We Build
           </motion.a>
         </motion.div>
 
@@ -141,10 +143,10 @@ export default function Hero() {
           flexWrap: 'wrap',
         }}>
           {[
-            { value: 'Local', label: 'Louisiana-Based' },
-            { value: 'AI-First', label: 'Every Solution' },
-            { value: '24/7', label: 'Voice Agents' },
-            { value: 'Real', label: 'Results, Not Fluff' },
+            { value: 'Ex-Bank VP', label: 'Analyzes your business first' },
+            { value: 'We Run It Too', label: 'Same systems in our own companies' },
+            { value: 'ROI-First', label: 'Built to make you money' },
+            { value: 'Local', label: 'Bossier City, Louisiana' },
           ].map(stat => (
             <div key={stat.label} style={{ textAlign: 'center' }}>
               <div style={{

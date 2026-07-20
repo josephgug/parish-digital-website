@@ -95,7 +95,7 @@ const browser = await chromium.launch({
   await page.waitForTimeout(1500)
   const text = await page.evaluate(() => document.body.innerText + ' ' + document.body.textContent)
   const must = [
-    'AI automation for',
+    'AI that runs your business',
     'AI Voice Agents',
     'Why Parish Digital',
     'Built in',
