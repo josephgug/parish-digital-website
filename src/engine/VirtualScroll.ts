@@ -4,7 +4,8 @@
 //   pos    += 0.5 * (target*scale - pos)
 // Constants are deliberately RAW per-frame (60 Hz reference), per spec.
 
-import { clamp, tween, killTweens, type EaseName } from './math'
+import { clamp, tween, killTweens, frameHz, HZ_BASELINE, type EaseName } from './math'
+import { rigWheel } from './rig'
 
 const isAndroid = () => /Android/i.test(navigator.userAgent)
 
@@ -52,18 +53,26 @@ export class VirtualScroll {
     on('keydown', (e) => this.onKey(e))
   }
 
-  /** Platform wheel normalization (exact table). */
-  static wheelScale() {
-    const platform = navigator.platform || ''
-    const mac = /Mac/.test(platform) || /Mac/.test(navigator.userAgent)
-    const ffLine = 'MouseEvent' in window && 'MOZ_SOURCE_MOUSE' in MouseEvent
-    if (mac) return ffLine ? 4 : 0.33
-    return ffLine ? 10 : 0.25
+  /**
+   * Platform wheel normalization (exact spec table), indexed by the EVENT's
+   * deltaMode — not by a browser sniff. A physical mouse can report lines
+   * (deltaMode 1, deltaY ~3) or pixels (deltaMode 0, deltaY ~100) depending on
+   * browser and driver; the line multipliers below are exactly the pixel
+   * multipliers times a lines-to-px conversion (win 40px/line, mac ~12px/line),
+   * so one notch lands in the same place either way.
+   */
+  static wheelScale(deltaMode = 0) {
+    const mac = /Mac/.test(navigator.platform || '') || /Mac/.test(navigator.userAgent)
+    const pixel = mac ? 0.33 : 0.25
+    if (deltaMode === 1) return mac ? 4 : 10 // LINE
+    if (deltaMode === 2) return pixel * window.innerHeight // PAGE
+    return pixel // PIXEL
   }
 
   private onWheel(e: WheelEvent) {
     if (this.blocked) return
-    const s = VirtualScroll.wheelScale()
+    const s = VirtualScroll.wheelScale(e.deltaMode)
+    rigWheel(e.deltaMode, e.deltaY, s)
     killTweens(this as unknown as Record<string, number>, 'target')
     this.target += e.deltaY * s
     this.inertia = e.deltaY * s // seed momentum from the LAST wheel event
@@ -132,7 +141,15 @@ export class VirtualScroll {
   }
 
   /**
-   * Once per rAF frame. Constants are raw per-frame by design.
+   * Once per rAF frame.
+   *
+   * The two constants (0.9 inertia decay, 0.5 position chase) are authored
+   * against a 60 Hz reference frame. Applying them raw per-frame makes the
+   * whole feel scale with the DISPLAY: on a 144 Hz monitor a notch settles in
+   * ~520ms instead of ~1250ms and on 240 Hz in ~310ms, which reads as the
+   * camera teleporting between sections with no runway in between. Both poles
+   * are therefore raised to the power of "how many 60 Hz frames did this frame
+   * last", which is an identity at exactly 60 Hz and correct everywhere else.
    *
    * The accumulator stays UNBOUNDED (spec default) — a hard clamp kills the
    * fling at the page ends and leaves a dead zone you have to scroll back out
@@ -141,22 +158,27 @@ export class VirtualScroll {
    * camera stop dead at the footer.
    */
   update() {
+    // frameHz() is frames-at-120Hz (math.ts baseline); these constants are 60Hz.
+    const f60 = clamp(frameHz() * (60 / HZ_BASELINE), 0.05, 4)
     if (this.isInertia) {
-      this.inertia *= 0.9
-      this.target += this.inertia
+      const d = Math.pow(0.9, f60)
+      // exact sum of the decay-first discrete series over f60 60Hz frames
+      this.target += this.inertia * ((0.9 * (1 - d)) / 0.1)
+      this.inertia *= d
     }
     if (this.limit) {
       const maxT = this.maxPixels
       const over = this.target > maxT ? this.target - maxT : this.target < 0 ? this.target : 0
       if (over !== 0) {
-        this.target -= over * 0.22
-        this.inertia *= 0.55
+        this.target -= over * (1 - Math.pow(0.78, f60))
+        this.inertia *= Math.pow(0.55, f60)
         if (Math.abs(this.target - clamp(this.target, 0, maxT)) < 0.5) {
           this.target = clamp(this.target, 0, maxT)
         }
       }
     }
-    this.delta = this.blocked ? 0 : 0.5 * (this.target * this.scale - this.y)
+    const chase = 1 - Math.pow(0.5, f60)
+    this.delta = this.blocked ? 0 : chase * (this.target * this.scale - this.y)
     this.y += this.delta
     if (Math.abs(this.delta) < 0.01) this.delta = 0
     if (Math.abs(this.y) < 0.001) this.y = 0

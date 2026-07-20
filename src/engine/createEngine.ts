@@ -1,4 +1,5 @@
 import { Engine } from './Engine'
+import { RIG_ENABLED } from './rig'
 
 export type EngineHandle = {
   engine: Engine
@@ -30,6 +31,8 @@ export async function createEngine(
   engine.add(composite) // order 90 — owns the draw
 
   await engine.init()
+
+  if (RIG_ENABLED) window.__ENGINE = engine
 
   return {
     engine,

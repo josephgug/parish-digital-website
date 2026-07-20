@@ -11,7 +11,11 @@ export type RigFrame = {
   camZ: number
 }
 
-export type Rig = { frames: RigFrame[]; enabled: boolean; _f: number }
+/** Raw wheel events as the hardware delivered them — deltaMode is the thing
+ *  synthetic Playwright wheels can't reproduce, so it has to be observable. */
+export type RigWheel = { deltaMode: number; deltaY: number; scale: number; t: number }
+
+export type Rig = { frames: RigFrame[]; wheel: RigWheel[]; enabled: boolean; _f: number }
 
 const host = typeof location !== 'undefined' ? location.hostname : ''
 const isPreview = /\.vercel\.app$/.test(host) || host === 'localhost' || host === '127.0.0.1'
@@ -22,10 +26,20 @@ export const RIG_ENABLED = Boolean(import.meta.env.DEV) || isPreview || forced
 declare global {
   interface Window {
     __RIG?: Rig
+    /** live engine handle — geometry/runway inspection for the scroll gate */
+    __ENGINE?: unknown
   }
 }
 
-export const rig: Rig = { frames: [], enabled: false, _f: 0 }
+export const rig: Rig = { frames: [], wheel: [], enabled: false, _f: 0 }
+
+/** Always-on ring buffer (last 50) so `__RIG.wheel` answers "what is my mouse
+ *  actually sending?" on a real machine without arming a capture first. */
+export function rigWheel(deltaMode: number, deltaY: number, scale: number) {
+  if (!RIG_ENABLED) return
+  rig.wheel.push({ deltaMode, deltaY, scale, t: performance.now() })
+  if (rig.wheel.length > 50) rig.wheel.shift()
+}
 
 if (RIG_ENABLED && typeof window !== 'undefined') window.__RIG = rig
 
