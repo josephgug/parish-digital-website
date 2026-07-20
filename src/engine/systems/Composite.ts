@@ -94,7 +94,10 @@ const compFrag = /* glsl */ `
     vec2 c = vUv - 0.5;
     color *= 1.0 - dot(c, c) * 0.9;
     color += uTeal * pow(max(0.0, 1.0 - length(vUv - vec2(0.06, 0.96)) * 1.15), 6.0) * 0.13;
-    color += uWarm * pow(max(0.0, 1.0 - length(vUv - vec2(0.96, 0.05)) * 1.2), 7.0) * 0.07;
+    // Bottom-right warm counterweight to the teal glow at top-left. At 0.07/pow7
+    // this was mathematically present but invisible on a desktop panel — either
+    // it reads as an accent or it should not cost a uniform.
+    color += uWarm * pow(max(0.0, 1.0 - length(vUv - vec2(0.97, 0.04)) * 0.95), 4.0) * 0.20;
     color += uMark * uBurst * 0.22;
 
     gl_FragColor = vec4(color, 1.0);
