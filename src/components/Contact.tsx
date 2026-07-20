@@ -15,19 +15,53 @@ const inputStyle = {
   boxSizing: 'border-box' as const,
 }
 
+/**
+ * The v1 Formspree form, recovered from commit ab54356 (branch
+ * feat/activetheory-motion). A Formspree form ID is public by design — it is
+ * submit-only and rate-limited server-side — so it lives in the bundle, not in
+ * an env var that a static build could not read anyway.
+ */
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mgojrgyp'
+
 export default function Contact() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-60px' })
   const [form, setForm] = useState({ name: '', email: '', phone: '', business: '', message: '' })
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [error, setError] = useState<string | null>(null)
   const [focused, setFocused] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (status === 'sending') return
     setStatus('sending')
-    // Simulate send
-    await new Promise(r => setTimeout(r, 1200))
-    setStatus('sent')
+    setError(null)
+    try {
+      const res = await fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (!res.ok) {
+        // Formspree replies { errors: [{ field, message }] } on a rejected submission
+        const data = await res.json().catch(() => null)
+        const detail = data?.errors?.map((x: { message: string }) => x.message).filter(Boolean).join(' · ')
+        throw new Error(detail || `The form service rejected the submission (${res.status}).`)
+      }
+      setStatus('sent')
+    } catch (err) {
+      // A thrown TypeError here is the network itself (offline, DNS, blocked),
+      // not a validation failure — say something the visitor can act on.
+      const offline = err instanceof TypeError
+      setStatus('error')
+      setError(
+        offline
+          ? "Couldn't reach the server. Check your connection and try again."
+          : err instanceof Error && err.message
+            ? err.message
+            : 'Something went wrong sending your message.',
+      )
+    }
   }
 
   return (
@@ -278,6 +312,33 @@ export default function Contact() {
                   />
                 </div>
 
+                {/* Deliberately NOT a motion component: the failure path must render
+                    identically under prefers-reduced-motion, and an error is the one
+                    thing that should never wait on an animation. role=alert so screen
+                    readers hear it without moving focus off the field being fixed. */}
+                {status === 'error' && error && (
+                  <div
+                    role="alert"
+                    style={{
+                      display: 'flex', alignItems: 'flex-start', gap: 10,
+                      background: 'rgba(120,30,30,0.18)',
+                      border: '1px solid rgba(220,90,90,0.45)',
+                      borderRadius: 10, padding: '12px 14px',
+                      color: '#f0b4b4', fontSize: 14, lineHeight: 1.5,
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginTop: 1 }} aria-hidden="true">
+                      <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <span>
+                      {error} You can also email us directly at{' '}
+                      <a href="mailto:joseph@parishdigital.ai" style={{ color: '#5DCAA5' }}>
+                        joseph@parishdigital.ai
+                      </a>.
+                    </span>
+                  </div>
+                )}
+
                 <motion.button
                   type="submit"
                   data-magnetic
@@ -308,7 +369,7 @@ export default function Contact() {
                     el.style.boxShadow = '0 0 24px rgba(29,158,117,0.25)'
                   }}
                 >
-                  {status === 'sending' ? 'Sending...' : 'Send Message →'}
+                  {status === 'sending' ? 'Sending...' : status === 'error' ? 'Try Again →' : 'Send Message →'}
                 </motion.button>
               </form>
             )}
