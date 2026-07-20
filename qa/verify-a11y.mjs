@@ -118,6 +118,59 @@ const browser = await chromium.launch({
   await ctx.close()
 }
 
+// ---- custom cursor ------------------------------------------------------
+// Hiding the OS cursor is only acceptable while the replacement is provably
+// under the pointer. It once was not: `margin:-50%` on a fixed element
+// resolves against the containing block's WIDTH on BOTH axes, so the dot sat
+// ~720px above the pointer, off-screen, and the page had no visible pointer
+// at all. Nothing caught it, so it is checked here.
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+  const page = await ctx.newPage()
+  await page.goto(url, { waitUntil: 'load' })
+  await page.waitForTimeout(3500)
+
+  let worst = 0
+  for (const [x, y] of [[720, 450], [40, 40], [1400, 860], [200, 700], [1100, 120]]) {
+    await page.mouse.move(x, y)
+    await page.waitForTimeout(120)
+    const c = await page.evaluate(() => {
+      const r = document.querySelector('.cursor-dot')?.getBoundingClientRect()
+      return r ? [r.left + r.width / 2, r.top + r.height / 2] : null
+    })
+    if (!c) { worst = Infinity; break }
+    worst = Math.max(worst, Math.hypot(c[0] - x, c[1] - y))
+  }
+  check('cursor dot tracks the pointer exactly', worst < 1, `worst offset ${worst.toFixed(2)}px over 5 positions`)
+
+  const st = await page.evaluate(() => {
+    const d = document.querySelector('.cursor-dot')
+    const cs = d && getComputedStyle(d)
+    const hidden = getComputedStyle(document.documentElement).cursor === 'none'
+    return cs ? { display: cs.display, vis: cs.visibility, op: +cs.opacity, pe: cs.pointerEvents, z: +cs.zIndex, hidden } : null
+  })
+  check('cursor dot is actually visible', Boolean(st) && st.display !== 'none' && st.vis === 'visible' && st.op === 1,
+    st ? `display:${st.display} opacity:${st.op}` : 'no .cursor-dot')
+  check('cursor never eats clicks', Boolean(st) && st.pe === 'none' && st.z >= 90, st ? `pointer-events:${st.pe} z:${st.z}` : '—')
+  // the whole point: if the OS cursor is hidden, a tracking replacement exists
+  check('native cursor only hidden when replaced', !st?.hidden || worst < 1, `cursor:none=${st?.hidden}`)
+
+  // clicks must still reach real targets across the page
+  for (const [label, sel] of [['nav Services', 'a[href="#services"]'], ['nav Contact', 'a[href="#contact"]']]) {
+    const el = page.locator(sel).first()
+    const before = await page.evaluate(() => window.__ENGINE?.scroll.target ?? 0)
+    await el.click({ timeout: 5000 }).catch(() => {})
+    await page.waitForTimeout(1200)
+    const after = await page.evaluate(() => window.__ENGINE?.scroll.target ?? 0)
+    check(`click reaches ${label}`, Math.abs(after - before) > 1, `scroll ${before.toFixed(0)} -> ${after.toFixed(0)}`)
+  }
+  const input = page.locator('input, textarea').first()
+  await input.click({ timeout: 5000 }).catch(() => {})
+  check('click reaches form field', await page.evaluate(() => ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)))
+  await ctx.close()
+}
+
+
 await browser.close()
 console.log(pass ? '\nALL PASS — robustness gates green.' : '\nFAILED')
 process.exit(pass ? 0 : 1)

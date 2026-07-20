@@ -21,22 +21,36 @@ export default function Cursor() {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (!fine || reduced) return
 
-    document.documentElement.classList.add('has-cursor')
-
     const mouse = { x: innerWidth / 2, y: innerHeight / 2 }
     const eased = { x: mouse.x, y: mouse.y }
     let hot = 0
     let hotTarget = 0
 
+    // The dot is written HERE, from the pointer event itself — not from the
+    // engine frame loop. It is therefore pixel-exact and correct even when the
+    // engine is absent (no-WebGL fallback), still booting, or stopped
+    // (hidden tab / lost context). Hiding the OS cursor is only safe because
+    // of that guarantee, so the takeover waits for the first real move rather
+    // than starting with the dot parked at a guessed centre.
     const onMove = (e: PointerEvent) => {
       mouse.x = e.clientX
       mouse.y = e.clientY
+      if (dot.current) dot.current.style.transform = `translate3d(${e.clientX}px,${e.clientY}px,0)`
+      if (!document.documentElement.classList.contains('has-cursor')) {
+        document.documentElement.classList.add('has-cursor')
+      }
       const el = (e.target as HTMLElement | null)?.closest?.(
         'a, button, input, textarea, [data-magnetic]',
       )
       hotTarget = el ? 1 : 0
     }
     window.addEventListener('pointermove', onMove, { passive: true })
+
+    // Pointer gone (other window, devtools, OS chrome): give the real cursor
+    // back rather than leaving a stale dot as the only pointer on screen.
+    const onLeave = () => document.documentElement.classList.remove('has-cursor')
+    document.addEventListener('pointerleave', onLeave)
+    window.addEventListener('blur', onLeave)
 
     let stop: (() => void) | undefined
     let raf = 0
@@ -46,12 +60,12 @@ export default function Cursor() {
         raf = requestAnimationFrame(attach)
         return
       }
+      document.documentElement.classList.add('has-cursor-ring')
       stop = engine.onFrame(() => {
         eased.x += (mouse.x - eased.x) * 0.22
         eased.y += (mouse.y - eased.y) * 0.22
         hot += (hotTarget - hot) * 0.12
 
-        if (dot.current) dot.current.style.transform = `translate3d(${mouse.x}px,${mouse.y}px,0)`
         if (ring.current) {
           const s = 1 + hot * 0.9
           ring.current.style.transform = `translate3d(${eased.x}px,${eased.y}px,0) scale(${s.toFixed(3)})`
@@ -89,7 +103,10 @@ export default function Cursor() {
       cancelAnimationFrame(raf)
       stop?.()
       window.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerleave', onLeave)
+      window.removeEventListener('blur', onLeave)
       document.documentElement.classList.remove('has-cursor')
+      document.documentElement.classList.remove('has-cursor-ring')
     }
   }, [])
 
