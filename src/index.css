@@ -232,12 +232,17 @@ textarea::placeholder {
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  /* Sized off the LIVE worst case, not a local capture: on the deployed site
+     network latency pushes the intro later, so ~4.5s lands nearer the true peak
+     of the dispersal and the field is markedly denser than it is locally. The
+     ellipse has to reach the subhead and both CTAs, not just the headline. */
   background: radial-gradient(
-    62% 48% at 50% 45%,
-    rgba(3, 10, 8, 0.86) 0%,
-    rgba(3, 10, 8, 0.66) 42%,
-    rgba(3, 10, 8, 0.28) 66%,
-    transparent 80%
+    74% 66% at 50% 52%,
+    rgba(3, 10, 8, 0.92) 0%,
+    rgba(3, 10, 8, 0.84) 34%,
+    rgba(3, 10, 8, 0.6) 58%,
+    rgba(3, 10, 8, 0.24) 74%,
+    transparent 88%
   );
   opacity: 0;
   animation: hero-scrim 7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
