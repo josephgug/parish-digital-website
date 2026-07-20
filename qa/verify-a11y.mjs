@@ -97,7 +97,7 @@ const browser = await chromium.launch({
   const must = [
     'AI that runs your business',
     'AI Voice Agents',
-    'Why Parish Digital',
+    'Why Parish',
     'Built in',
     'joseph@parishdigital.ai',
     '(318) 780-8343',

@@ -9,8 +9,8 @@ const pillars = [
         <circle cx="12" cy="10" r="3"/>
       </svg>
     ),
-    headline: 'We\'re Local',
-    body: 'Based in Bossier City, we understand Louisiana businesses — the culture, the market, and what actually drives results here. When you need us, we\'re nearby.',
+    headline: 'We run it before we sell it.',
+    body: 'Every automation, agent, and site we offer is already running inside my own companies — including Mudderswag, a business I built and operate profitably. If it doesn\'t work for me, it never reaches you. You\'re not a test case.',
   },
   {
     icon: (
@@ -19,8 +19,8 @@ const pillars = [
         <path d="M12 8v4l3 3"/>
       </svg>
     ),
-    headline: 'AI-First by Default',
-    body: 'We don\'t bolt AI onto existing workflows as an afterthought. Every system we build is designed with automation at its core from day one.',
+    headline: 'I learn your business before I touch it.',
+    body: 'I spent years as a commercial-bank VP dissecting companies\' financials, tax returns, and operations — from corner stores to $100M+ corporate deals — to decide what to fund. I bring that same analysis to yours. No proposal until I understand exactly how you make money.',
   },
   {
     icon: (
@@ -28,8 +28,8 @@ const pillars = [
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
       </svg>
     ),
-    headline: 'Results-Focused',
-    body: 'We measure success in leads, bookings, and revenue — not vanity metrics. If it doesn\'t move your business forward, we don\'t build it.',
+    headline: 'Every build answers one question: will this make you money?',
+    body: 'Most providers sell features. My background is finance and sales, so I build for return — more booked jobs, captured leads, and recovered hours — and I\'ll show you the math before you spend a dollar.',
   },
   {
     icon: (
@@ -39,8 +39,8 @@ const pillars = [
         <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
       </svg>
     ),
-    headline: 'A Firm, Not a Freelancer',
-    body: 'You get a dedicated team with a defined process — not a solo contractor juggling fifteen clients. We operate like a firm because that\'s what your business deserves.',
+    headline: 'The opposite of the cold-call crowd.',
+    body: 'You\'ve met the Instagram-reel "AI agencies" cold-calling with generic, prebuilt automations they can\'t explain or adjust. This is the opposite: custom-built, fully understood, and tuned to your business long after launch.',
   },
 ]
 
@@ -119,7 +119,7 @@ export default function WhyParish() {
             color: '#1D9E75', textTransform: 'uppercase',
             display: 'block', marginBottom: 16,
           }}>
-            The Difference
+            Why Parish
           </span>
           <h2 style={{
             fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -128,7 +128,7 @@ export default function WhyParish() {
             margin: '0 0 20px', letterSpacing: '-1.2px',
             lineHeight: 1.1,
           }}>
-            Why Parish Digital
+            Anyone can resell AI. Almost no one understands your business first.
           </h2>
           <p style={{
             fontSize: 17, color: '#6a9e8a', maxWidth: 500,

@@ -10,7 +10,7 @@ const services = [
       </svg>
     ),
     title: 'Website Design',
-    description: 'Custom-built sites that convert visitors into customers. Fast, mobile-first, and designed to represent your brand at its best.',
+    description: 'Fast, mobile-first sites that turn visitors into booked jobs and paying customers — not just something that looks nice. Built to load instantly, rank on Google, and represent your brand the way you\'d build it yourself.',
     tags: ['Custom Design', 'SEO-Ready', 'Mobile-First'],
   },
   {
@@ -21,7 +21,7 @@ const services = [
       </svg>
     ),
     title: 'AI Voice Agents',
-    description: 'Intelligent phone agents that answer calls, book appointments, and qualify leads 24/7 — so you never miss an opportunity.',
+    description: 'An AI phone agent that answers every call, books appointments, and qualifies leads 24/7 — so a missed call never becomes a missed sale. Trained on your business, your services, and how you talk to your customers.',
     tags: ['24/7 Coverage', 'Lead Capture', 'Appointment Booking'],
   },
   {
@@ -31,7 +31,7 @@ const services = [
       </svg>
     ),
     title: 'Workflow Automation',
-    description: 'Eliminate repetitive tasks with AI-powered workflows. From follow-up sequences to data entry — we automate what slows you down.',
+    description: 'We find where your time and money leak — intake, follow-ups, data entry, bookkeeping — and automate it. The same systems we run inside our own companies, tuned to how yours works.',
     tags: ['CRM Integration', 'Auto Follow-ups', 'Data Sync'],
   },
   {
@@ -42,8 +42,8 @@ const services = [
       </svg>
     ),
     title: 'Social Media Management',
-    description: 'Consistent, on-brand content across your channels. We plan, create, and schedule posts that keep your audience engaged.',
-    tags: ['Content Strategy', 'Scheduling', 'Engagement'],
+    description: 'On-brand content planned, created, and posted across every channel on the schedule you set — automatically. A consistent presence without you lifting a finger or hiring a team.',
+    tags: ['Content Strategy', 'Scheduling', 'Auto-Posting'],
   },
   {
     icon: (
