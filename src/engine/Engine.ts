@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { VirtualScroll } from './VirtualScroll'
 import { aHz, clamp, crange, lerpHz, tickHz, updateTweens } from './math'
-import { rigPush } from './rig'
+import { RIG_ENABLED, rigPush } from './rig'
 import { resolveTier, type Tier } from './tier'
 import { WAYPOINTS, type Waypoint } from './waypoints'
 
@@ -274,6 +274,11 @@ export class Engine {
   private frame = (now: number) => {
     if (!this.running) return
     this.raf = requestAnimationFrame(this.frame)
+
+    // Claim the debug handle from the frame loop, not from construction:
+    // StrictMode/HMR double-mount races meant a DISPOSED engine could win the
+    // global and every probe would read a frozen scroll of 0.
+    if (RIG_ENABLED && window.__ENGINE !== this) window.__ENGINE = this
 
     const dt = Math.min(48, now - this.last)
     this.last = now

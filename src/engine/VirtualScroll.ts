@@ -159,7 +159,9 @@ export class VirtualScroll {
    */
   update() {
     // frameHz() is frames-at-120Hz (math.ts baseline); these constants are 60Hz.
-    const f60 = clamp(frameHz() * (60 / HZ_BASELINE), 0.05, 4)
+    // bounds are a divide-by-zero / tab-stall guard only — 0.005 is ~12000Hz,
+    // far past any real panel, so nothing is capped in practice.
+    const f60 = clamp(frameHz() * (60 / HZ_BASELINE), 0.005, 4)
     if (this.isInertia) {
       const d = Math.pow(0.9, f60)
       // exact sum of the decay-first discrete series over f60 60Hz frames
@@ -178,8 +180,15 @@ export class VirtualScroll {
       }
     }
     const chase = 1 - Math.pow(0.5, f60)
-    this.delta = this.blocked ? 0 : chase * (this.target * this.scale - this.y)
-    this.y += this.delta
+    const step = this.blocked ? 0 : chase * (this.target * this.scale - this.y)
+    this.y += step
+
+    // `delta` is the VELOCITY every consumer couples to (uScrollDelta -> mesh
+    // distortion + chromatic aberration, world banking, idle-wobble
+    // suppression). Reported as a 60Hz-equivalent per-frame distance, NOT the
+    // raw per-frame step: at 240Hz the real step is 4x smaller for the same
+    // hand speed, which silently drained all of that motion to nothing.
+    this.delta = step / f60
     if (Math.abs(this.delta) < 0.01) this.delta = 0
     if (Math.abs(this.y) < 0.001) this.y = 0
   }
