@@ -99,6 +99,7 @@ const browser = await chromium.launch({
     'AI Voice Agents',
     'Why Parish',
     'Built in',
+    'Currently Building',
     'joseph@parishdigital.ai',
     '(318) 780-8343',
     // canvas-rendered MSDF headlines must also exist as text

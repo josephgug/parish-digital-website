@@ -5,6 +5,7 @@ import Hero from './components/Hero'
 import Services from './components/Services'
 import WhyParish from './components/WhyParish'
 import About from './components/About'
+import CurrentlyBuilding from './components/CurrentlyBuilding'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
 
@@ -44,9 +45,11 @@ function App() {
           <WhyParish />
           <Band vh={120} label="Automations" />
           <About />
-          <Band vh={120} label="Loops" />
+          <Band vh={140} label="Loops" />
+          <CurrentlyBuilding />
+          <Band vh={45} />
           <Contact />
-          <Band vh={100} />
+          <Band vh={65} />
           <Footer />
         </div>
       </div>

@@ -56,6 +56,21 @@ export const WAYPOINTS: Waypoint[] = [
     lerp: 0.08,
   },
   {
+    // Copy v2 §7. Sits between `about` (z -17) and `contact` (z -27.5) so the
+    // Z-dolly stays monotonic and the new section gets real runway instead of
+    // being flown past. Swings the look slightly RIGHT where `about` swung
+    // left — the fly-through alternates, and two left beats in a row reads as
+    // the camera drifting rather than turning.
+    id: 'building',
+    at: 0.72,
+    position: [0, 0.1, -22.5],
+    lookAt: [0.35, 0, -31],
+    fov: 31,
+    moveXY: [0.45, 0.4],
+    wobble: 0.03,
+    lerp: 0.075,
+  },
+  {
     id: 'contact',
     at: 0.82,
     position: [0, 0, -27.5],

@@ -32,7 +32,7 @@ const geo = await page.evaluate(() => {
       if (!c) return null;
       const total = Math.max(1, c.scrollHeight - window.innerHeight);
       const top = c.getBoundingClientRect().top;
-      return ['hero','services','why','about','contact','footer'].map((id) => {
+      return ['hero','services','why','about','building','contact','footer'].map((id) => {
         const el = document.getElementById(id);
         if (!el) return { id, at: 'MISSING ELEMENT' };
         return { id, at: +((el.getBoundingClientRect().top - top) / total).toFixed(4) };

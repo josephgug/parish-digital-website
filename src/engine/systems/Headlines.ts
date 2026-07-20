@@ -13,7 +13,21 @@ import { WAYPOINTS } from '../waypoints'
 
 const FONT = '/fonts/PlusJakartaSans-ExtraBold-latin.ttf'
 
-type Line = { text: string; at: number; size?: number; dy?: number }
+type Line = {
+  text: string
+  at: number
+  size?: number
+  dy?: number
+  /**
+   * Anchor `at` to the gap between two real sections instead of trusting a
+   * fixed fraction. A section's position in PROGRESS space is viewport
+   * dependent — copy reflows taller on a phone — so a literal fraction that
+   * lands cleanly in a band on desktop can land on top of a section on mobile.
+   * `[a, b, t]` = lerp t of the way from waypoint a to waypoint b, re-derived
+   * on every resize from the same DOM measurement the waypoints use.
+   */
+  between?: [string, string, number]
+}
 
 /** Band headlines — the world moments between DOM sections. */
 const LINES: Line[] = [
@@ -21,7 +35,9 @@ const LINES: Line[] = [
   { text: 'THAT RUNS YOUR BUSINESS', at: 0.135, size: 0.70, dy: -0.55 },
   { text: 'AGENTS', at: 0.35, size: 1.5 },
   { text: 'AUTOMATIONS', at: 0.55, size: 1.2 },
-  { text: 'LOOPS', at: 0.73, size: 1.5 },
+  // The Currently Building section (Copy v2 §7) now sits after this band, and
+  // the reveal window is ~0.13 wide, so this one has to be measured, not guessed.
+  { text: 'LOOPS', at: 0.715, size: 1.5, between: ['about', 'building', 0.55] },
 ]
 
 export const HEADLINE_COPY = LINES.map((l) => l.text)
@@ -284,6 +300,9 @@ export class Headlines implements System {
 
         this.root.add(group)
         this.items.push({ line, mesh, mat, group, width: Math.max(0.001, maxX - minX) })
+        // builds resolve asynchronously, after the first resize() has already
+        // run — so each one anchors and fits itself on arrival
+        this.reanchor()
         this.fit()
       },
     )
@@ -306,7 +325,27 @@ export class Headlines implements System {
     }
   }
 
+  /**
+   * Re-derive `at` for any line anchored `between` two sections, then re-place
+   * it on the camera path. Runs on resize, after Engine.measureContent has
+   * refreshed the waypoint fractions from the DOM.
+   */
+  private reanchor() {
+    for (const it of this.items) {
+      const spec = it.line.between
+      if (!spec) continue
+      const [aId, bId, t] = spec
+      const a = WAYPOINTS.find((w) => w.id === aId)
+      const b = WAYPOINTS.find((w) => w.id === bId)
+      if (!a || !b) continue
+      it.line.at = a.at + (b.at - a.at) * t
+      it.group.position.copy(this.placement(it.line.at))
+      it.group.position.y += it.line.dy ?? 0
+    }
+  }
+
   resize() {
+    this.reanchor()
     this.fit()
   }
 
