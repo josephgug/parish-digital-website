@@ -34,6 +34,13 @@ export default function Hero() {
     >
       {/* No DOM orbs / grid here — the WebGL mesh behind the canvas IS the background. */}
 
+      {/* Load-moment legibility scrim. The logomark dispersal peaks right behind
+          the headline between ~2.5s and ~5s and washes it out — the signature
+          moment costs the first impression. This darkens only the area under the
+          copy and then fades to nothing, so the settled hero is untouched.
+          Timed off the same INTRO clock the copy reveal already assumes. */}
+      {!reduced && <div className="hero-scrim" aria-hidden="true" />}
+
       <div style={{
         maxWidth: 900,
         margin: '0 auto',

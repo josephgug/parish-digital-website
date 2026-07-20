@@ -5,6 +5,7 @@
 
 import { useSyncExternalStore } from 'react'
 import type { Engine } from './Engine'
+import { RIG_ENABLED } from './rig'
 
 export type UiState = {
   active: string
@@ -37,8 +38,13 @@ export const useUiState = () => useSyncExternalStore(subscribe, () => state, () 
 let engine: Engine | null = null
 export const setEngine = (e: Engine | null) => {
   engine = e
-  // dev/preview handle for the QA harness and manual poking
-  if (typeof window !== 'undefined') (window as unknown as { __ENGINE?: Engine | null }).__ENGINE = e
+  // dev/preview handle for the QA harness and manual poking. Gated on
+  // RIG_ENABLED like every other instrumentation hook (pipeline.md §7) — this
+  // assignment was unguarded and was shipping a handle to the whole engine on
+  // production, while Engine.ts's own assignment was correctly gated.
+  if (RIG_ENABLED && typeof window !== 'undefined') {
+    ;(window as unknown as { __ENGINE?: Engine | null }).__ENGINE = e
+  }
   return e
 }
 export const getEngine = () => engine

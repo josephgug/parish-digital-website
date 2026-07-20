@@ -221,6 +221,44 @@ textarea::placeholder {
   }
 }
 
+/* ---- hero load-moment legibility scrim ----------------------------------
+   Held through the logomark dispersal (which peaks ~2.5-5s directly behind the
+   headline), then faded out completely so the settled hero is exactly as
+   designed. The hold runs long deliberately: on a slower GPU the engine's intro
+   starts later, and a scrim that lingers a beat is invisible, whereas one that
+   clears early puts the copy back under the burst. */
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    62% 48% at 50% 45%,
+    rgba(3, 10, 8, 0.86) 0%,
+    rgba(3, 10, 8, 0.66) 42%,
+    rgba(3, 10, 8, 0.28) 66%,
+    transparent 80%
+  );
+  opacity: 0;
+  animation: hero-scrim 7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes hero-scrim {
+  0% { opacity: 0; }
+  6% { opacity: 1; }
+  72% { opacity: 1; }
+  100% { opacity: 0; }
+}
+/* no canvas => no dispersal to defend against */
+.no-webgl .hero-scrim {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-scrim {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 /* ---- mobile copy containment ----------------------------------------
    #scroll-root is fixed + overflow:hidden, so copy wider than the viewport is
    silently CLIPPED instead of becoming scrollable — it just reads as text
