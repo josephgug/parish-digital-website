@@ -73,7 +73,103 @@ async function main() {
     data[s.name] = await grab();
     writeFileSync(`${OUT}/${s.name}.csv`, toCSV(data[s.name]));
   }
+
+  // ---- runway + per-notch probes ----------------------------------------
+  // These exist because the sessions above CANNOT catch two whole classes of
+  // bug: page.mouse.wheel only ever emits deltaMode=0 (so a broken line-mode
+  // path stays invisible), and the physics decay is measured per FRAME (so a
+  // notch that settles 4x too fast in wall-clock time still fits the curve).
+  const geo = await page.evaluate(() => {
+    const c = document.getElementById('scroll-content');
+    const e = window.__ENGINE;
+    if (!c || !e) return null;
+    return {
+      scrollHeight: c.scrollHeight,
+      vh: window.innerHeight,
+      runwayPx: e.scroll.maxPixels,
+      runwayViewports: e.scroll.maxPixels / window.innerHeight,
+    };
+  });
+
+  // One notch, dispatched with an explicit deltaMode, measured to full rest.
+  const notchOn = (page) => async (deltaMode, deltaY) => {
+    await page.evaluate(() => {
+      const e = window.__ENGINE;
+      e.scroll.target = 0; e.scroll.y = 0; e.scroll.inertia = 0; e.scroll.isInertia = false;
+    });
+    await page.waitForTimeout(500);
+    await page.evaluate(() => { window.__RIG.frames = []; window.__RIG.enabled = true; });
+    await page.evaluate(([dm, dy]) =>
+      window.dispatchEvent(new WheelEvent('wheel', { deltaY: dy, deltaMode: dm, bubbles: true })),
+      [deltaMode, deltaY]);
+    await page.waitForTimeout(2200);
+    return page.evaluate(() => {
+      const f = window.__RIG.frames.slice();
+      window.__RIG.enabled = false;
+      const moving = f.filter((r) => Math.abs(r.uScrollDelta) > 0.02);
+      return {
+        px: window.__ENGINE.scroll.pixels,
+        // frames the notch was actually in motion — "many frames" IS the runway
+        movingFrames: moving.length,
+        // wall-clock is the refresh-rate-invariant measure: a per-frame
+        // constant applied raw makes this collapse on a high-Hz display while
+        // the per-frame decay fit still looks perfect.
+        movingMs: moving.length > 1 ? moving[moving.length - 1].t - moving[0].t : 0,
+      };
+    });
+  };
+
+  const notch = notchOn(page);
+  const probe = geo && {
+    geo,
+    pixel: await notch(0, 100), // Chrome/Edge/Safari physical mouse
+    line: await notch(1, 3),    // Firefox / line-reporting mouse driver
+  };
+
+  // Slow continuous line-mode wheel: each notch must advance a little, never
+  // a section. This is the shape of a real hand on a real wheel.
+  let slowLine = null;
+  if (geo) {
+    await page.evaluate(() => {
+      const e = window.__ENGINE;
+      e.scroll.target = 0; e.scroll.y = 0; e.scroll.inertia = 0; e.scroll.isInertia = false;
+    });
+    await page.waitForTimeout(500);
+    const steps = [];
+    for (let i = 0; i < 10; i++) {
+      const before = await page.evaluate(() => window.__ENGINE.scroll.pixels);
+      await page.evaluate(() =>
+        window.dispatchEvent(new WheelEvent('wheel', { deltaY: 3, deltaMode: 1, bubbles: true })));
+      await page.waitForTimeout(300); // a human notch cadence, not a flick
+      const after = await page.evaluate(() => window.__ENGINE.scroll.pixels);
+      steps.push(after - before);
+    }
+    slowLine = { maxStep: Math.max(...steps), total: steps.reduce((a, b) => a + b, 0) };
+  }
+
   await browser.close();
+
+  // ---- high-refresh pass -------------------------------------------------
+  // Joe's desktop is not 60Hz, and neither is any gaming panel. Unlocking vsync
+  // drives rAF into the thousands of fps, which stands in for a 144/240Hz
+  // display: if any physics constant is applied raw per-frame, the same notch
+  // completes in a fraction of the wall-clock time and the runway vanishes.
+  let fast = null;
+  try {
+    const b2 = await chromium.launch({ headless: true, args: ['--use-gl=angle', '--use-angle=default', '--ignore-gpu-blocklist', '--enable-webgl', '--disable-gpu-vsync', '--disable-frame-rate-limit'] });
+    const p2 = await (await b2.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 })).newPage();
+    await p2.goto(URL, { waitUntil: 'load' });
+    await p2.waitForTimeout(2500);
+    const fps = await p2.evaluate(() => new Promise((res) => {
+      let n = 0; const t0 = performance.now();
+      const tick = () => { n++; if (performance.now() - t0 < 1000) requestAnimationFrame(tick); else res(n); };
+      requestAnimationFrame(tick);
+    }));
+    fast = { fps, notch: await notchOn(p2)(0, 100) };
+    await b2.close();
+  } catch (e) {
+    console.log(`note: high-refresh pass unavailable (${e.message})`);
+  }
 
   let pass = true;
   const check = (label, ok, detail) => { console.log(`${ok ? 'PASS' : 'FAIL'}  ${label}  ${detail}`); if (!ok) pass = false; };
@@ -91,6 +187,46 @@ async function main() {
   const dts = data['A-impulse'].map(r => r.dt).filter(Boolean);
   const medDt = dts.sort((a,b)=>a-b)[dts.length >> 1] || 0;
   check('frame pacing ~60fps', medDt > 0 && medDt < (TARGET.fpsMedianDtMaxMs ?? 22), `median dt ${medDt.toFixed(1)}ms`);
+
+  // ---- runway + per-notch checks ----------------------------------------
+  if (!probe) {
+    check('runway probe', false, 'window.__ENGINE or #scroll-content missing');
+  } else {
+    const { runwayPx, runwayViewports, scrollHeight, vh } = probe.geo;
+    const SECTION = runwayPx / 6;            // 6 authored waypoints
+    const pct = (px) => (px / runwayPx) * 100;
+    const sect = (px) => (px / SECTION) * 100;
+
+    check('runway >= 10 viewports', runwayViewports >= 10,
+      `${runwayViewports.toFixed(1)} vh of travel (content ${scrollHeight}px @ ${vh}px viewport)`);
+
+    for (const [label, r] of [['pixel-mode (deltaMode 0)', probe.pixel], ['line-mode (deltaMode 1)', probe.line]]) {
+      check(`one ${label} notch is a small step`, r.px > runwayPx * 0.005 && r.px < runwayPx * 0.05,
+        `${r.px.toFixed(0)}px = ${pct(r.px).toFixed(2)}% of runway, ${sect(r.px).toFixed(1)}% of a section`);
+      // a notch that lands instantly is the "no runway visible" bug, and it is
+      // invisible to a per-frame decay fit — this is the wall-clock guard
+      check(`${label} notch glides over many frames`, r.movingFrames >= 25,
+        `${r.movingFrames} frames in motion`);
+    }
+
+    const [lo, hi] = [probe.pixel.px, probe.line.px].sort((a, b) => a - b);
+    check('deltaMode 0 and 1 normalized to each other', lo > 0 && hi / lo <= 2,
+      `pixel ${probe.pixel.px.toFixed(0)}px vs line ${probe.line.px.toFixed(0)}px (ratio ${(hi / (lo || 1)).toFixed(2)}x, allowed <=2x)`);
+
+    // both bounds matter: too big is a section-jump, too small is the dead
+    // line-mode path (which otherwise reads as a reassuring "gradual" PASS)
+    check('slow line-mode wheel advances gradually', slowLine && sect(slowLine.maxStep) < 20 && pct(slowLine.total) > 5,
+      slowLine ? `worst notch ${slowLine.maxStep.toFixed(0)}px = ${sect(slowLine.maxStep).toFixed(1)}% of a section; 10 notches = ${pct(slowLine.total).toFixed(1)}% of runway` : '—');
+
+    if (fast) {
+      const ratio = probe.pixel.movingMs / (fast.notch.movingMs || 1);
+      check('feel is refresh-rate independent', ratio <= 1.5 && ratio >= 0.66,
+        `notch takes ${probe.pixel.movingMs.toFixed(0)}ms @60fps vs ${fast.notch.movingMs.toFixed(0)}ms @${fast.fps}fps (${ratio.toFixed(2)}x, allowed 0.66-1.5x)`);
+      check('travel per notch is refresh-rate independent',
+        Math.abs(fast.notch.px - probe.pixel.px) < probe.pixel.px * 0.15,
+        `${probe.pixel.px.toFixed(0)}px @60fps vs ${fast.notch.px.toFixed(0)}px @${fast.fps}fps`);
+    }
+  }
 
   console.log(pass ? '\nALL PASS — physics match the extracted spec.' : '\nFAILED — see mechanics.md §7 diagnosis table.');
   process.exit(pass ? 0 : 1);
