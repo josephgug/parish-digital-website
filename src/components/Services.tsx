@@ -55,8 +55,8 @@ const services = [
       </svg>
     ),
     title: 'Booking System Integration',
-    description: 'Seamlessly connect scheduling tools to your website, CRM, and voice agents. Clients book themselves — you just show up.',
-    tags: ['Calendar Sync', 'Automated Reminders', 'Payment Ready'],
+    description: 'Online booking wired into your website, your calendar, and your voice agent — so appointments book themselves around the clock. No phone tag, no double-bookings, no missed slots.',
+    tags: ['Calendar Sync', 'Self-Serve Booking', 'No Double-Booking'],
   },
 ]
 

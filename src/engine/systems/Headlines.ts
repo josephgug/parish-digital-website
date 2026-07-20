@@ -29,14 +29,26 @@ type Line = {
   between?: [string, string, number]
 }
 
-/** Band headlines — the world moments between DOM sections. */
+/**
+ * Band headlines — the world moments between DOM sections.
+ *
+ * Every line is anchored `between` two sections. The `at` literals are only the
+ * pre-measurement fallback for the first frames; the real value is derived from
+ * the DOM on each resize.
+ *
+ * Choosing the t factors: the reveal window spans roughly at-0.055 to at+0.075,
+ * so a line stays clear of the following section while
+ *     t <= 1 - 0.075 / (b.at - a.at)
+ * which lands around 0.62 for these gaps. The literals this replaced sat at
+ * t ~ 0.73, i.e. the AGENTS and AUTOMATIONS windows were already bleeding into
+ * the tops of `why` and `about` before this change — the same defect LOOPS hit,
+ * just less visible.
+ */
 const LINES: Line[] = [
-  { text: 'WE BUILD THE MACHINE', at: 0.115, size: 0.70, dy: 0.55 },
-  { text: 'THAT RUNS YOUR BUSINESS', at: 0.135, size: 0.70, dy: -0.55 },
-  { text: 'AGENTS', at: 0.35, size: 1.5 },
-  { text: 'AUTOMATIONS', at: 0.55, size: 1.2 },
-  // The Currently Building section (Copy v2 §7) now sits after this band, and
-  // the reveal window is ~0.13 wide, so this one has to be measured, not guessed.
+  { text: 'WE BUILD THE MACHINE', at: 0.110, size: 0.70, dy: 0.55, between: ['hero', 'services', 0.55] },
+  { text: 'THAT RUNS YOUR BUSINESS', at: 0.124, size: 0.70, dy: -0.55, between: ['hero', 'services', 0.62] },
+  { text: 'AGENTS', at: 0.327, size: 1.5, between: ['services', 'why', 0.62] },
+  { text: 'AUTOMATIONS', at: 0.522, size: 1.2, between: ['why', 'about', 0.60] },
   { text: 'LOOPS', at: 0.715, size: 1.5, between: ['about', 'building', 0.55] },
 ]
 

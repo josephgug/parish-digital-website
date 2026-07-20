@@ -5,8 +5,8 @@ const pillars = [
   {
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-        <circle cx="12" cy="10" r="3"/>
+        <path d="M9 2v6.5L4.2 17A2 2 0 0 0 6 20h12a2 2 0 0 0 1.8-3L15 8.5V2"/>
+        <path d="M8 2h8M7.5 14h9"/>
       </svg>
     ),
     headline: 'We run it before we sell it.',
@@ -15,8 +15,9 @@ const pillars = [
   {
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/>
-        <path d="M12 8v4l3 3"/>
+        <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/>
+        <path d="M8 7h6M8 11h4"/>
+        <circle cx="16.5" cy="14.5" r="3.5"/><path d="M19 17l2.5 2.5"/>
       </svg>
     ),
     headline: 'I learn your business before I touch it.',
@@ -25,7 +26,8 @@ const pillars = [
   {
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        <polyline points="3 17 9 11 13 15 21 7"/>
+        <polyline points="15 7 21 7 21 13"/>
       </svg>
     ),
     headline: 'Every build answers one question: will this make you money?',
@@ -34,9 +36,9 @@ const pillars = [
   {
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        <path d="M10.7 5.5 9.4 2.6A1.6 1.6 0 0 0 7.6 1.8L4.4 3A1.8 1.8 0 0 0 3.4 5c.7 4 2.7 7.6 5.6 10.4"/>
+        <path d="M12.6 17.4c2.1 1.5 4.5 2.5 7 3a1.8 1.8 0 0 0 2-1l1.2-3.2a1.6 1.6 0 0 0-.8-1.8l-2.9-1.3a1.6 1.6 0 0 0-1.8.4l-1.2 1.4"/>
+        <line x1="2" y1="2" x2="22" y2="22"/>
       </svg>
     ),
     headline: 'The opposite of the cold-call crowd.',
@@ -134,7 +136,7 @@ export default function WhyParish() {
             fontSize: 17, color: '#6a9e8a', maxWidth: 500,
             margin: '0 auto', lineHeight: 1.65,
           }}>
-            There are a lot of agencies. Here's why local businesses choose us.
+            An operator who reads your numbers first — not another reseller. That's the whole company.
           </p>
         </motion.div>
 

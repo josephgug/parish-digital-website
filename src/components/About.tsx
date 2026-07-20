@@ -133,24 +133,32 @@ export default function About() {
             </p>
           </div>
 
+          {/* True two-line value/label stats, matching the hero social-proof
+              strip (Copy v2.1 §8). The pill row could not carry the label
+              without collapsing both halves into one string. */}
           <div style={{
             marginTop: 36,
             display: 'flex',
-            gap: 12,
+            gap: 26,
             flexWrap: 'wrap',
           }}>
-            {/* Copy v2 gives these as stat/label pairs; kept as single pills so the
-                existing flex-wrap tag row is preserved rather than re-marked-up. */}
-            {['Bossier City, LA — Owner-operated', 'Ex-Bank VP — Finance-grade analysis', 'Proven in-house — We use what we sell'].map(tag => (
-              <span key={tag} style={{
-                fontSize: 13, fontWeight: 600,
-                color: '#5DCAA5',
-                background: 'rgba(29,158,117,0.08)',
-                border: '1px solid rgba(29,158,117,0.2)',
-                padding: '6px 14px', borderRadius: 100,
-              }}>
-                {tag}
-              </span>
+            {[
+              { value: 'Bossier City, LA', label: 'Owner-operated' },
+              { value: 'Ex-Bank VP', label: 'Finance-grade analysis' },
+              { value: 'Proven in-house', label: 'We use what we sell' },
+            ].map(stat => (
+              <div key={stat.value}>
+                <div style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 'clamp(16px, 4vw, 19px)', fontWeight: 800,
+                  color: '#5DCAA5', lineHeight: 1.15, marginBottom: 4,
+                }}>
+                  {stat.value}
+                </div>
+                <div style={{ fontSize: 13, color: '#5a8c7a', fontWeight: 500 }}>
+                  {stat.label}
+                </div>
+              </div>
             ))}
           </div>
         </motion.div>
