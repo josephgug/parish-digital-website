@@ -85,23 +85,43 @@ body {
    against the containing block's WIDTH on BOTH axes, so on a fixed element
    -50% also meant -50% of the viewport WIDTH vertically — which parked the
    cursor ~720px above the pointer, off-screen, on a 1440px window. */
+/* Appearance only — tracking, pointer-events and the touch/reduced-motion
+   gating are untouched.
+
+   The dot used to be #5dcaa5, which is PD.mark: the exact colour of the mesh
+   node cores, at roughly their size. Against a few hundred same-hue, same-size
+   glowing particles the pointer read as one more background dot. Fixed on three
+   independent axes so no single background can defeat it:
+     HUE   — amber #E8A657, the brand's warm accent, opposite the teal mesh
+     VALUE — a hard near-black separator ring, so it also separates from a
+             bright bloom or a pale service card
+     FORM  — a solid core inside a much larger thick ring; no mesh particle has
+             that structure at any size
+
+   mix-blend-mode: difference was considered and rejected — over this palette it
+   turns muddy mid-teal rather than inverting cleanly, and it would make the
+   pointer's colour depend on whatever it happens to be over. */
 .cursor-dot {
-  width: 9px;
-  height: 9px;
-  margin-left: -4.5px;
-  margin-top: -4.5px;
-  background: #5dcaa5;
-  /* outer ring keeps the dot readable over the pale service cards too */
+  width: 11px;
+  height: 11px;
+  margin-left: -5.5px;
+  margin-top: -5.5px;
+  background: #e8a657;
   box-shadow:
-    0 0 10px rgba(93, 202, 165, 0.9),
-    0 0 0 1.5px rgba(4, 13, 10, 0.55);
+    0 0 0 2px rgba(3, 10, 8, 0.9),
+    0 0 12px 2px rgba(232, 166, 87, 0.85),
+    0 0 26px rgba(232, 166, 87, 0.4);
 }
 .cursor-ring {
-  width: 34px;
-  height: 34px;
-  margin-left: -17px;
-  margin-top: -17px;
-  border: 1px solid rgba(93, 202, 165, 0.6);
+  width: 38px;
+  height: 38px;
+  margin-left: -19px;
+  margin-top: -19px;
+  border: 2px solid rgba(232, 166, 87, 0.9);
+  box-shadow:
+    0 0 0 1px rgba(3, 10, 8, 0.75),
+    inset 0 0 0 1px rgba(3, 10, 8, 0.55),
+    0 0 14px rgba(232, 166, 87, 0.3);
   transition: opacity 0.25s;
 }
 /* The dot tracks from the pointermove listener, so it is correct in every
