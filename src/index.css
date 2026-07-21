@@ -222,11 +222,9 @@ textarea::placeholder {
 }
 
 /* ---- hero load-moment legibility scrim ----------------------------------
-   Held through the logomark dispersal (which peaks ~2.5-5s directly behind the
-   headline), then faded out completely so the settled hero is exactly as
-   designed. The hold runs long deliberately: on a slower GPU the engine's intro
-   starts later, and a scrim that lingers a beat is invisible, whereas one that
-   clears early puts the copy back under the burst. */
+   Held through the logomark dispersal (which sits directly behind the headline
+   during the fly-in), then faded out completely so the settled hero is exactly
+   as designed. Held by ENGINE STATE, not a timeline — see Hero.tsx. */
 .hero-scrim {
   position: absolute;
   inset: 0;
@@ -244,14 +242,11 @@ textarea::placeholder {
     rgba(3, 10, 8, 0.24) 74%,
     transparent 88%
   );
-  opacity: 0;
-  animation: hero-scrim 7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-@keyframes hero-scrim {
-  0% { opacity: 0; }
-  6% { opacity: 1; }
-  72% { opacity: 1; }
-  100% { opacity: 0; }
+  /* Up from first paint, then driven down by Hero once engine.introProgress
+     reports the fly-in finished. No CSS keyframes: the intro does not start on
+     a wall clock, it starts whenever engine init completes. */
+  opacity: 1;
+  will-change: opacity;
 }
 /* no canvas => no dispersal to defend against */
 .no-webgl .hero-scrim {

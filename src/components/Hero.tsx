@@ -1,7 +1,14 @@
 import { motion, useReducedMotion } from 'motion/react'
+import { useEffect, useRef } from 'react'
 import { HAS_WEBGL } from '../engine/caps'
+import { getEngine } from '../engine/store'
 
 const EASE = [0.22, 1, 0.36, 1] as [number, number, number, number]
+
+/** ms the scrim takes to dissolve once the fly-in has actually finished */
+const SCRIM_FADE = 900
+/** hard stop: if the engine never reports a finished intro, never strand the scrim */
+const SCRIM_MAX_MS = 14000
 
 /**
  * The hero copy resolves in AFTER the WebGL logomark assembles and disperses
@@ -13,6 +20,54 @@ const INTRO = 2.4
 export default function Hero() {
   // no canvas => no formation to wait for, so don't hold the copy back
   const reduced = useReducedMotion() || !HAS_WEBGL
+  const scrim = useRef<HTMLDivElement>(null)
+
+  /**
+   * Hold the legibility scrim until the engine says the fly-in is genuinely
+   * done, then dissolve it. Keyed to engine.introProgress rather than a CSS
+   * clock: the intro starts whenever init finishes (tier detection, font and
+   * asset fetches), so on a slow device or a cold network a fixed timeline
+   * clears the scrim while the dispersal is still in front of the copy.
+   */
+  useEffect(() => {
+    if (reduced) return
+    let stop: (() => void) | undefined
+    let raf = 0
+    let fadeStart = 0
+    const mounted = performance.now()
+
+    const apply = (o: number) => {
+      if (scrim.current) scrim.current.style.opacity = String(o)
+    }
+
+    const attach = () => {
+      const engine = getEngine()
+      if (!engine) {
+        // engine still booting — keep the scrim up, but never past the backstop
+        if (performance.now() - mounted > SCRIM_MAX_MS) return apply(0)
+        raf = requestAnimationFrame(attach)
+        return
+      }
+      stop = engine.onFrame(() => {
+        const now = performance.now()
+        const done = engine.introProgress >= 1 || now - mounted > SCRIM_MAX_MS
+        if (done && !fadeStart) fadeStart = now
+        const o = fadeStart ? Math.max(0, 1 - (now - fadeStart) / SCRIM_FADE) : 1
+        apply(o)
+        if (o === 0) {
+          stop?.()
+          stop = undefined
+        }
+      })
+    }
+    attach()
+
+    return () => {
+      cancelAnimationFrame(raf)
+      stop?.()
+    }
+  }, [reduced])
+
   const fadeUp = (delay = 0) => ({
     initial: reduced ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 },
     animate: { opacity: 1, y: 0 },
@@ -38,8 +93,8 @@ export default function Hero() {
           the headline between ~2.5s and ~5s and washes it out — the signature
           moment costs the first impression. This darkens only the area under the
           copy and then fades to nothing, so the settled hero is untouched.
-          Timed off the same INTRO clock the copy reveal already assumes. */}
-      {!reduced && <div className="hero-scrim" aria-hidden="true" />}
+          Opacity is driven from engine.introProgress by the effect above. */}
+      {!reduced && <div ref={scrim} className="hero-scrim" aria-hidden="true" />}
 
       <div style={{
         maxWidth: 900,

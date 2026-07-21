@@ -194,6 +194,18 @@ export class Engine {
     return this.size
   }
 
+  /**
+   * 0..1 progress of the load fly-in (camera z 40 -> hero waypoint). This is
+   * what governs how dense the mesh reads on screen — at v=0 the whole world is
+   * in frame and the copy sits inside the logomark dispersal; by v=1 it has
+   * thinned out. The hero legibility scrim keys off this rather than a wall
+   * clock, so it cannot clear early on a device where the intro starts late or
+   * runs long.
+   */
+  get introProgress() {
+    return this.introT.v
+  }
+
   /** Default draw. The Composite system replaces this with the post chain. */
   renderFn: (ctx: FrameCtx) => void = () => this.renderer.render(this.scene, this.camera)
 

@@ -30,7 +30,7 @@ const pillars = [
         <polyline points="15 7 21 7 21 13"/>
       </svg>
     ),
-    headline: 'Every build answers one question: will this make you money?',
+    headline: 'Every build answers one question: Will this make you money?',
     body: 'Most providers sell features. My background is finance and sales, so I build for return — more booked jobs, captured leads, and recovered hours — and I\'ll show you the math before you spend a dollar.',
   },
   {
