@@ -205,7 +205,7 @@ export default function Hero() {
           flexWrap: 'wrap',
         }}>
           {[
-            { value: 'Ex-Bank VP', label: 'Analyzes your business first' },
+            { value: 'Ex-Business Banker', label: 'Analyzes your business first' },
             { value: 'We Run It Too', label: 'Same systems in our own companies' },
             { value: 'ROI-First', label: 'Built to make you money' },
             { value: 'Local', label: 'Bossier City, Louisiana' },

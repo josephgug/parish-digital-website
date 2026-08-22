@@ -126,7 +126,7 @@ export default function About() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <p style={{ fontSize: 15.5, color: '#6a9e8a', lineHeight: 1.75, margin: 0 }}>
-              Parish Digital is run by Joe Guglielmo — a former Vice President at a commercial bank who analyzed everything from small-business loans to $100M+ corporate deals, and the owner-operator of Mudderswag, a profitable business he built from the ground up.
+              Parish Digital is run by Joe Guglielmo — a former Business Banker at a commercial bank who analyzed everything from small-business loans to $100M+ corporate deals, and the owner-operator of Mudderswag, a profitable business he built from the ground up.
             </p>
             <p style={{ fontSize: 15.5, color: '#6a9e8a', lineHeight: 1.75, margin: 0 }}>
               That combination is the whole point. I've read the financials, the tax returns, and the operations of hundreds of businesses, so I actually understand how yours makes money. And I run the exact automations, voice agents, and websites I sell inside my own companies first — so what you get is already proven, built by someone who's sat on both sides of the table.
@@ -144,7 +144,7 @@ export default function About() {
           }}>
             {[
               { value: 'Bossier City, LA', label: 'Owner-operated' },
-              { value: 'Ex-Bank VP', label: 'Finance-grade analysis' },
+              { value: 'Ex-Business Banker', label: 'Finance-grade analysis' },
               { value: 'Proven in-house', label: 'We use what we sell' },
             ].map(stat => (
               <div key={stat.value}>

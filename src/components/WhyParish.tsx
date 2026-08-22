@@ -21,7 +21,7 @@ const pillars = [
       </svg>
     ),
     headline: 'I learn your business before I touch it.',
-    body: 'I spent years as a commercial-bank VP dissecting companies\' financials, tax returns, and operations — from corner stores to $100M+ corporate deals — to decide what to fund. I bring that same analysis to yours. No proposal until I understand exactly how you make money.',
+    body: 'I spent years as a commercial Business Banker dissecting companies\' financials, tax returns, and operations — from corner stores to $100M+ corporate deals — to decide what to fund. I bring that same analysis to yours. No proposal until I understand exactly how you make money.',
   },
   {
     icon: (
