@@ -22,3 +22,6 @@ Thumbs.db
 *.log
 npm-debug.log*
 .vercel
+
+# Internal sales-room material — PD pricing is never public (Joe ruling 2026-08-22)
+offer/
