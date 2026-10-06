@@ -101,7 +101,7 @@ const browser = await chromium.launch({
     'Built in',
     'Currently Building',
     'joseph@parishdigital.ai',
-    '(318) 780-8343',
+    '(318) 718-9400',
     // canvas-rendered MSDF headlines must also exist as text
     'We build the machine that runs your business.',
     'Agents',

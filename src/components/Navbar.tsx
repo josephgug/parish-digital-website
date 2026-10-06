@@ -219,8 +219,8 @@ export default function Navbar() {
               <a href="mailto:joseph@parishdigital.ai" style={{ fontSize: 13, color: '#4a7a68', textDecoration: 'none' }}>
                 joseph@parishdigital.ai
               </a>
-              <a href="tel:+13187808343" style={{ fontSize: 13, color: '#4a7a68', textDecoration: 'none' }}>
-                (318) 780-8343
+              <a href="tel:+13187189400" style={{ fontSize: 13, color: '#4a7a68', textDecoration: 'none' }}>
+                (318) 718-9400
               </a>
             </motion.div>
           </motion.div>
